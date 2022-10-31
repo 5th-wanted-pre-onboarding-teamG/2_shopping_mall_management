@@ -12,10 +12,7 @@ on:
     types: [closed]
     branches:
       - develop
-      - label: enhancement
-        prefix: feature/issue-${issue.number}
-      - label: bug
-        prefix: feature/issue-${issue.number}
+      - 'feature/issue-**'
 
 jobs:
   create_issue_branch_job:
