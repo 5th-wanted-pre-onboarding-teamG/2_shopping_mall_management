@@ -9,15 +9,13 @@ on:
       # main/develop/feature 브랜치에 푸시가 올라오면 actions 실행
       - main
       - develop
-      - feature/**
+      - 'feature/**'
   pull_request:
     # develop 브랜치에 PR 올라오면 actions 실행
-    branches: [ "develop" ]
-    
+    branches: ['develop']
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
 
     strategy:
@@ -26,16 +24,16 @@ jobs:
         # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
 
     steps:
-    - uses: actions/checkout@v3
-    - name: Use Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v3
-      with:
-        node-version: ${{ matrix.node-version }}
-        cache: 'npm'
-    - run: npm ci
-    - run: npm run build --if-present
-    - run: npm test
-    - name: npm install, and build
-      run: |
-        npm install
-        npm run build
+      - uses: actions/checkout@v3
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+      - run: npm ci
+      - run: npm run build --if-present
+      - run: npm test
+      - name: npm install, and build
+        run: |
+          npm install
+          npm run build
