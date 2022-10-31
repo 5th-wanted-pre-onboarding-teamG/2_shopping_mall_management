@@ -2,7 +2,7 @@ import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { LoggerMiddleware } from './middlewares/logger.middleware';
-import ormconfig from '../ormconfig';
+import * as ormconfig from '../ormconfig';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
 @Module({
