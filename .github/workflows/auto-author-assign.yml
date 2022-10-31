@@ -7,7 +7,7 @@ on:
     types: [ opened, reopened ]
 
 permissions:
-  issues: wrtie
+  issues: write
   pull-requests: write
 
 jobs:
