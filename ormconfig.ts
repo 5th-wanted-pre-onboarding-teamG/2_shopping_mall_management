@@ -1,5 +1,5 @@
 import { TypeOrmModuleOptions } from '@nestjs/typeorm';
-import dotenv from 'dotenv';
+import * as dotenv from 'dotenv';
 
 dotenv.config();
 const config: TypeOrmModuleOptions = {
@@ -9,7 +9,7 @@ const config: TypeOrmModuleOptions = {
   username: process.env.DB_USERNAME,
   password: process.env.DB_PASSWORD,
   database: process.env.DB_DATABASE,
-  entities: [__dirname + 'src/entities/*.{ts,js}'],
+  entities: [__dirname + '/src/entities/*.{ts,js}'],
   migrations: [__dirname + 'src/migrations/*.ts'],
   autoLoadEntities: true,
   charset: 'utf8mb4',
