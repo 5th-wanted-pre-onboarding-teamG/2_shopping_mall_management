@@ -1,5 +1,6 @@
-import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 import { Countries } from './Countries';
+import { Orders } from './Orders';
 
 @Entity({ schema: 'product_shopping', name: 'deliveryCosts' })
 export class DeliveryCosts {
@@ -14,4 +15,7 @@ export class DeliveryCosts {
 
   @ManyToOne(() => Countries, (countries) => countries.deliveryCosts)
   country: Countries;
+
+  @OneToMany(() => Orders, (orders) => orders.deliveryCost)
+  orders: Orders[];
 }
