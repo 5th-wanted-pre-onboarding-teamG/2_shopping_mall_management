@@ -17,9 +17,10 @@ export default class DataSeeder implements Seeder {
     await countriesRepository.insert(countriesData);
 
     // deliveryCosts Seed 데이터 추가
-    for (const deliveryCost of deliveryCostsData) {
-      const { id, ...items } = deliveryCost; //
-      const rows = Object.keys(items).map((key) => {
+    let totalDeliveryCosts = [];
+    for (const deliveryCosts of deliveryCostsData) {
+      const { id, ...items } = deliveryCosts; //
+      const data = Object.keys(items).map((key) => {
         return {
           countryName: id,
           quantity: parseInt(key),
@@ -27,7 +28,8 @@ export default class DataSeeder implements Seeder {
         };
       });
 
-      await deliveryCostsRepository.insert(rows);
+      totalDeliveryCosts = totalDeliveryCosts.concat(data);
     }
+    await deliveryCostsRepository.insert(totalDeliveryCosts);
   }
 }
