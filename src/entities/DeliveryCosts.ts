@@ -1,4 +1,4 @@
-import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { Countries } from './Countries';
 
 @Entity({ schema: 'product_shopping', name: 'deliveryCosts' })
@@ -12,7 +12,6 @@ export class DeliveryCosts {
   @Column()
   price: number;
 
-  @JoinColumn({ name: 'countryName' })
   @ManyToOne(() => Countries, (countries) => countries.deliveryCosts)
   country: Countries;
 }

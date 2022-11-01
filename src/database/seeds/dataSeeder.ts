@@ -20,9 +20,11 @@ export default class DataSeeder implements Seeder {
     let totalDeliveryCosts = [];
     for (const deliveryCosts of deliveryCostsData) {
       const { id, ...items } = deliveryCosts; //
+      const country = await countriesRepository.findOneBy({ name: id });
+
       const data = Object.keys(items).map((key) => {
         return {
-          countryName: id,
+          country: country,
           quantity: parseInt(key),
           price: parseInt(items[key]),
         };
