@@ -5,8 +5,8 @@ import { Address } from './embeddeds/address';
 import { UserCoupons } from './UserCoupons';
 import { Payments } from './Payments';
 import { Users } from './Users';
-import { Countries } from './Countries';
 import { Products } from './Products';
+import { DeliveryCosts } from './DeliveryCosts';
 
 @Entity({ schema: 'product_shopping', name: 'orders' })
 export class Orders {
@@ -34,8 +34,8 @@ export class Orders {
   @ManyToOne(() => Users, (users) => users.orders)
   user: Users;
 
-  @ManyToOne(() => Countries, (countries) => countries.orders)
-  country: Countries;
+  @ManyToOne(() => DeliveryCosts, (deliveryCosts) => deliveryCosts.orders)
+  deliveryCost: DeliveryCosts;
 
   @ManyToOne(() => Products, (products) => products.orders)
   product: Products;
