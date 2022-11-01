@@ -12,7 +12,7 @@ import { ConfigModule } from '@nestjs/config';
     ConfigModule.forRoot({ isGlobal: true }),
     TypeOrmModule.forRootAsync({
       imports: [MySqlConfigModule],
-      useExisting: MySqlConfigService,
+      useClass: MySqlConfigService,
     }),
   ],
   controllers: [AppController],
