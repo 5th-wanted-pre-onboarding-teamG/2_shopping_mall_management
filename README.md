@@ -59,11 +59,24 @@
 
 문제 해결과정을 설명해주세요
 
+<br><br>
+
 ## npm 실행
 
 ```bash
 $ npm install
 ```
+
+<br>
+
+## Seed 데이터 추가
+
+```bash
+$ npm run build
+$ npm run seed
+```
+
+<br>
 
 ## Running the app
 
@@ -77,6 +90,8 @@ $ npm run start:dev
 # production mode
 $ npm run start:prod
 ```
+
+<br>
 
 ## Test
 
