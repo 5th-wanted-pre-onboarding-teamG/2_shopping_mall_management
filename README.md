@@ -36,16 +36,7 @@
 
 <br><br>
 
-## API 명세서 - 팀노션작성후 export
-
-|      URL       | Method |    기능명    |
-| :------------: | :----: | :----------: |
-|   /users/:id   |  GET   | 유저정보조회 |
-| /users/coupons |  GET   | 쿠폰정보조회 |
-
-<br>
-
-## 테스트케이스
+## [ API 명세서](https://www.notion.so/2-REST-API-5812b62b45f1488687455650fb04dddc)
 
 <br>
 
