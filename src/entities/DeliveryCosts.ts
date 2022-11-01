@@ -10,12 +10,9 @@ export class DeliveryCosts {
   quantity: number;
 
   @Column()
-  countryName: string;
-
-  @Column()
   price: number;
 
-  @JoinColumn({ name: 'name' })
+  @JoinColumn({ name: 'countryName' })
   @ManyToOne(() => Countries, (countries) => countries.deliveryCosts)
   country: Countries;
 }
