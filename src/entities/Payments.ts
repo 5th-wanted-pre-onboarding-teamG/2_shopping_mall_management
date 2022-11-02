@@ -1,4 +1,4 @@
-import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { PaymentState } from './enums/paymentState';
 import { DateColumns } from './embeddeds/dateColumns';
 import { Orders } from './Orders';
@@ -23,12 +23,13 @@ export class Payments {
   @Column(() => DateColumns, { prefix: false })
   dateColumns: DateColumns;
 
-  @Column('int', { primary: true, name: 'OrderId' })
+  @Column('int', { nullable: true, name: 'OrderId' })
   OrderId: number;
 
   @ManyToOne(() => Orders, (orders) => orders.Payments, {
     onDelete: 'SET NULL',
     onUpdate: 'CASCADE',
   })
+  @JoinColumn([{ name: 'OrderId', referencedColumnName: 'orderId' }])
   Order: Orders;
 }
