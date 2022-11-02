@@ -20,7 +20,7 @@ export class Coupons {
   /**
    * 쿠폰할인 가격
    * 퍼센트할인(%): 최소값 1% ~ 최댓값 100%
-   * 정액제(₩): 최소값 100원
+   * 정액제(₩): 최소값 1000원
    */
   @Column()
   salePrice: number;
