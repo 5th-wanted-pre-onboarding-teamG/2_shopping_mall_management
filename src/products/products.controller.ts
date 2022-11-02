@@ -30,15 +30,16 @@ export class ProductsController {
    */
   @UseGuards(OperateGuard)
   @Get()
-  async getAllProducts(@User() user: Users): Promise<Products[]> {
-    return await this.productsServics.getAllProducts(user);
+  async getAllProducts() {
+    return await this.productsServics.getAllProducts();
   }
   /**
    * @url GET 'api/products/:productId'
    * @returns 특정 상품 아이디의 상품 조회
    */
+  @UseGuards(OperateGuard)
   @Get(':productId')
-  async getProduct(@Param('productId') productId: number): Promise<Products> {
+  async getProduct(@Param('productId') productId: number) {
     return await this.productsServics.getProduct(productId);
   }
   /**
@@ -47,8 +48,8 @@ export class ProductsController {
    */
   @UseGuards(OperateGuard)
   @Delete(':productId')
-  async deleteProduct(@Param('productId', ParseIntPipe) productId: number, @User() user: Users) {
-    await this.productsServics.deleteProduct(productId, user);
+  async deleteProduct(@Param('productId', ParseIntPipe) productId: number) {
+    await this.productsServics.deleteProduct(productId);
   }
   /**
    * @url PUT 'api/products/:productId'

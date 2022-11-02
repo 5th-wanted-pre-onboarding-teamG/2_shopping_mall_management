@@ -1,7 +1,7 @@
 import { Injectable, ForbiddenException, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Products } from 'src/entities/Products';
-import { Repository, DeleteResult } from 'typeorm';
+import { Repository } from 'typeorm';
 import { CreateProductDto } from './dto/create-product.dto';
 import { Users } from 'src/entities/Users';
 import { UserRank } from 'src/entities/enums/userRank';
@@ -26,28 +26,19 @@ export class ProductsService {
     const saveProdut = await this.productsRepository.save(product);
     return saveProdut;
   }
-  async getAllProducts(user: Users): Promise<Products[]> {
-    //로그인 한 유저의 등록 상품만 보여 줍니다.
-    const result = await this.productsRepository
-      .createQueryBuilder('products')
-      .leftJoin('products.Author', 'users')
-      .where('products.deleteAt IS NULL')
-      .andWhere('products.Author =:userId', { userId: user.userId })
-      .getMany();
-
-    return result;
+  async getAllProducts() {
+    return await this.productsRepository.find();
   }
   async getProduct(productId: number): Promise<Products> {
     return await this.productsRepository.findOne({
       where: { productId },
     });
   }
-  async deleteProduct(productId: number, user: Users): Promise<DeleteResult> {
+  async deleteProduct(productId: number) {
     const result = await this.productsRepository
       .createQueryBuilder('products')
       .leftJoin('products.Author', 'users')
       .where('products.productId =:productId', { productId })
-      .andWhere('products.Author =:userId', { userId: user.userId })
       .getOne();
 
     if (!result) {
