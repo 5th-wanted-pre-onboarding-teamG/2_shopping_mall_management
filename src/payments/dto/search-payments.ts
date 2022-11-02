@@ -1,5 +1,5 @@
 export class SearchPayments {
-  search: string;
+  keyword: string;
   page: number;
   pageSize: number;
   startDate: Date;

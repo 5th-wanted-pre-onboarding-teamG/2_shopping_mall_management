@@ -123,7 +123,7 @@ export class PaymentsService {
    * @param searchPayment 검색어, 페이지 등 검색 조건
    */
   async getPaymentsBySearch(searchPayment: SearchPayments): Promise<ResultPaymentsDto> {
-    const { search = '', page = 1, pageSize = 10, startDate, endDate } = searchPayment;
+    const { keyword = '', page = 1, pageSize = 10, startDate, endDate } = searchPayment;
 
     const queryBuilder = this.paymentsRepository
       .createQueryBuilder('payments')
@@ -135,7 +135,7 @@ export class PaymentsService {
         'payments.paymentState',
         'users.name as userName',
       ])
-      .where('users.name = :username', { username: `%${search}%` });
+      .where('users.name = :username', { username: `%${keyword}%` });
 
     if (startDate) {
       queryBuilder.andWhere("DATE_FORMAT(payments.createAt, '%Y-%m-%d') >= DATE_FORMAT(:startDate, '%Y-%m-%d')", {
