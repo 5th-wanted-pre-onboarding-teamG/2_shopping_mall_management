@@ -1,4 +1,5 @@
 import { Column, CreateDateColumn, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import { DateColumns } from './embeddeds/dateColumns';
 import { CouponType } from './enums/couponType';
 import { OwnedCoupons } from './OwnedCoupons';
 
@@ -19,8 +20,8 @@ export class Coupons {
   @Column()
   validPeriod: number;
 
-  @CreateDateColumn()
-  createdAt: Date;
+  @Column(() => DateColumns, { prefix: false })
+  dateColumns: DateColumns;
 
   @OneToMany(() => OwnedCoupons, (ownedCoupons) => ownedCoupons.Coupon)
   OwnedCoupons: OwnedCoupons[];
