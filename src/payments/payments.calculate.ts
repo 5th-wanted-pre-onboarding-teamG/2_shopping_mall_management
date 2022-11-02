@@ -24,14 +24,14 @@ export const calculatePaymentPrice = (
  * @param totalProductPrice 상품 총 금액
  * @param deliveryPrice 배송비
  * @param couponType 쿠폰 타입
- * @param sale 할인 금액/퍼센트
+ * @param couponSalePrice 쿠폰 할인 금액/퍼센트
  * @param countryCode 국가 코드
  */
 export const calculateSalePrice = (
   totalProductPrice: number = 0,
   deliveryPrice: number = 0,
   couponType: CouponType,
-  sale: number = 0,
+  couponSalePrice: number = 0,
   countryCode: string,
 ) => {
   if (!couponType) return 0;
@@ -39,11 +39,11 @@ export const calculateSalePrice = (
   let salePrice = 0;
 
   if (isDeliveryCouponType(couponType)) {
-    salePrice = calculateDeliverySalePrice(deliveryPrice, sale);
+    salePrice = calculateDeliverySalePrice(deliveryPrice, couponSalePrice);
   } else if (isPercentCouponType(couponType)) {
-    salePrice = calculatePercentSalePrice(totalProductPrice, sale);
+    salePrice = calculatePercentSalePrice(totalProductPrice, couponSalePrice);
   } else if (isFlatRateCouponType(couponType)) {
-    salePrice = sale;
+    salePrice = couponSalePrice;
   } else {
     throw new NotFoundException('등록되지 않은 쿠폰 타입입니다.');
   }
@@ -54,19 +54,19 @@ export const calculateSalePrice = (
 /**
  * 배송비 할인 금액 계산
  * @param deliveryPrice 배송비
- * @param sale 배송 할인 퍼센트
+ * @param salePercent 배송 할인 퍼센트
  */
-const calculateDeliverySalePrice = (deliveryPrice: number = 0, sale: number = 0) => {
-  return Math.round((deliveryPrice * sale) / 100);
+const calculateDeliverySalePrice = (deliveryPrice: number = 0, salePercent: number = 0) => {
+  return Math.round((deliveryPrice * salePercent) / 100);
 };
 
 /**
  * 퍼센트 할인 금액 계산
  * @param totalProductPrice 상품 총 금액
- * @param sale 상품 할인 퍼센트
+ * @param salePercent 상품 할인 퍼센트
  */
-const calculatePercentSalePrice = (totalProductPrice: number = 0, sale: number = 0) => {
-  return Math.round((totalProductPrice * sale) / 100);
+const calculatePercentSalePrice = (totalProductPrice: number = 0, salePercent: number = 0) => {
+  return Math.round((totalProductPrice * salePercent) / 100);
 };
 
 /**

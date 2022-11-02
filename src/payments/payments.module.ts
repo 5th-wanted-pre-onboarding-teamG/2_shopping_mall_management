@@ -5,10 +5,10 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { Users } from '../entities/Users';
 import { Payments } from '../entities/Payments';
 import { Orders } from '../entities/Orders';
-import { UserCoupons } from '../entities/UserCoupons';
+import { OwnedCoupons } from '../entities/OwnedCoupons';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Payments, Orders, Users, UserCoupons])],
+  imports: [TypeOrmModule.forFeature([Payments, Orders, Users, OwnedCoupons])],
   providers: [PaymentsService],
   controllers: [PaymentsController],
 })

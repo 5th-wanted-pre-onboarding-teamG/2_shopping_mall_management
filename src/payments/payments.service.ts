@@ -9,7 +9,6 @@ import { Products } from '../entities/Products';
 import { ResultUserPayments } from './dto/result-user-payments.dto';
 import { SearchPayments } from './dto/search-payments';
 import { DeliveryCosts } from '../entities/DeliveryCosts';
-import { UserCoupons } from '../entities/UserCoupons';
 import { Coupons } from '../entities/Coupons';
 import { PaymentState } from '../entities/enums/paymentState';
 import { OrderState } from '../entities/enums/orderState';
@@ -17,6 +16,7 @@ import { calculatePaymentPrice, calculateSalePrice } from './payments.calculate'
 import { ResultPaymentsDto } from './dto/result-payments.dto';
 import { wrapTransaction } from '../common/transaction';
 import { Countries } from '../entities/Countries';
+import { OwnedCoupons } from '../entities/OwnedCoupons';
 
 @Injectable()
 export class PaymentsService {
@@ -28,8 +28,8 @@ export class PaymentsService {
     private readonly ordersRepository: Repository<Orders>,
     @InjectRepository(Users)
     private readonly usersRepository: Repository<Users>,
-    @InjectRepository(UserCoupons)
-    private readonly userCouponsRepository: Repository<UserCoupons>,
+    @InjectRepository(OwnedCoupons)
+    private readonly ownedCouponsRepository: Repository<OwnedCoupons>,
   ) {}
 
   /**
@@ -40,54 +40,57 @@ export class PaymentsService {
   async createPayment(createPaymentDto: CreatePaymentDto, user: Users) {
     await wrapTransaction(this.dataSource, async (entityManager: EntityManager) => {
       const orderId = createPaymentDto.orderId;
-      const existsOrder: { quantity: number; productPrice: number; deliveryPrice: number; countryCode: string } =
-        await entityManager
-          .getRepository(Orders)
-          .createQueryBuilder('orders')
-          .innerJoinAndSelect(Products, 'products')
-          .innerJoinAndSelect(DeliveryCosts, 'deliveryCosts')
-          .innerJoinAndSelect(Countries, 'countries', 'deliveryCosts.countryId = countries.countryId')
-          .select([
-            'orders.quantity',
-            'products.price as productPrice',
-            'deliveryCosts.price as deliveryPrice',
-            'countries.countryCode',
-          ])
-          .where('orders.orderId = :orderId', { orderId })
-          .getRawOne();
+      // const existsOrder: { quantity: number; productPrice: number; deliveryPrice: number; countryCode: string } =
+      const existsOrder = await entityManager
+        .getRepository(Orders)
+        .createQueryBuilder('orders')
+        .innerJoinAndSelect(Products, 'products')
+        .innerJoinAndSelect(DeliveryCosts, 'deliveryCosts')
+        .innerJoinAndSelect(Countries, 'countries', 'deliveryCosts.countryId = countries.countryId')
+        .select([
+          'orders.quantity',
+          'products.price as productPrice',
+          'deliveryCosts.price as deliveryPrice',
+          'countries.countryCode',
+        ])
+        .where('orders.orderId = :orderId', { orderId })
+        .getOne();
 
       if (!existsOrder) {
         throw new NotFoundException('주문 정보를 찾을 수 없습니다.');
       }
 
-      const userCoupons = await entityManager
-        .getRepository(UserCoupons)
+      const ownedCoupons = await entityManager
+        .getRepository(OwnedCoupons)
         .createQueryBuilder('usersCoupons')
         .innerJoinAndSelect(Coupons, 'coupons')
-        .select(['usersCoupons.usersCouponId', 'coupons.couponType', 'coupons.sale'])
+        .select(['usersCoupons.usersCouponId', 'coupons.couponType', 'coupons.salePrice'])
         .where('usersCoupons.orderId = :orderId', { orderId })
         .getOne();
 
-      const { quantity, productPrice, deliveryPrice, countryCode } = existsOrder;
-      const { couponType, sale } = userCoupons.coupon;
+      const quantity = existsOrder.quantity;
+      const productPrice = existsOrder.Product?.price;
+      const deliveryPrice = existsOrder.DeliveryCost?.price;
+      const countryCode = existsOrder.DeliveryCost?.Country?.countryCode;
+      const { couponType, salePrice } = ownedCoupons.Coupon;
       const totalProductPrice = productPrice * quantity;
-      let salePrice = calculateSalePrice(totalProductPrice, deliveryPrice, couponType, sale, countryCode);
+      let paymentSalePrice = calculateSalePrice(totalProductPrice, deliveryPrice, couponType, salePrice, countryCode);
       let paymentPrice = calculatePaymentPrice(totalProductPrice, deliveryPrice, salePrice, countryCode);
 
       await entityManager.getRepository(Payments).insert({
         paymentState: PaymentState.COMPLETE,
-        salePrice,
+        salePrice: paymentSalePrice,
         paymentPrice,
-        order: existsOrder,
-        // user,    TODO - 엔티티 변경후 추가
+        Order: existsOrder,
+        User: user,
       });
 
       await entityManager.getRepository(Orders).update(orderId, {
         orderState: OrderState.PAYMENT_COMPLETE,
       });
 
-      await entityManager.getRepository(UserCoupons).update(userCoupons.userCouponId, {
-        order: existsOrder,
+      await entityManager.getRepository(OwnedCoupons).update(ownedCoupons.ownedCouponId, {
+        Order: existsOrder,
       });
     });
   }
