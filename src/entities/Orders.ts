@@ -37,6 +37,9 @@ export class Orders {
   @Column('int', { primary: true, name: 'DeliveryCostId' })
   DeliveryCostId: number;
 
+  @Column('int', { primary: true, name: 'ProductId' })
+  ProductId: number;
+
   @ManyToOne(() => Users, (users) => users.Orders, {
     onDelete: 'CASCADE',
     onUpdate: 'CASCADE',
@@ -51,8 +54,12 @@ export class Orders {
   @JoinColumn([{ name: 'DeliveryCostId', referencedColumnName: 'deliveryCostId' }])
   DeliveryCost: DeliveryCosts;
 
-  @ManyToOne(() => Products, (products) => products.orders)
-  product: Products;
+  @ManyToOne(() => Products, (products) => products.Orders, {
+    onDelete: 'SET NULL',
+    onUpdate: 'CASCADE',
+  })
+  @JoinColumn([{ name: 'ProductId', referencedColumnName: 'productId' }])
+  Product: Products;
 
   @OneToMany(() => UserCoupons, (userCoupons) => userCoupons.order)
   userCoupons: UserCoupons[];

@@ -19,6 +19,6 @@ export class Products {
   @Column(() => DateColumns, { prefix: false })
   dateColumns: DateColumns;
 
-  @OneToMany(() => Orders, (orders) => orders.product)
-  orders: Orders[];
+  @OneToMany(() => Orders, (orders) => orders.Product)
+  Orders: Orders[];
 }
