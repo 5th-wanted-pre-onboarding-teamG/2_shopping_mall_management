@@ -1,4 +1,4 @@
-import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, CreateDateColumn, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 import { CouponType } from './enums/couponType';
 import { OwnedCoupons } from './OwnedCoupons';
 
@@ -14,7 +14,13 @@ export class Coupons {
   couponType: CouponType;
 
   @Column()
-  sale: number;
+  salePrice: number;
+
+  @Column()
+  validPeriod: number;
+
+  @CreateDateColumn()
+  createdAt: Date;
 
   @OneToMany(() => OwnedCoupons, (ownedCoupons) => ownedCoupons.Coupon)
   OwnedCoupons: OwnedCoupons[];
