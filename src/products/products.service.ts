@@ -37,4 +37,9 @@ export class ProductsService {
 
     return result;
   }
+  async getProduct(productId: number): Promise<Products> {
+    return await this.porductsRepository.findOne({
+      where: { productId },
+    });
+  }
 }

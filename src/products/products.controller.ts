@@ -1,4 +1,4 @@
-import { Controller, UseGuards, Post, Body, Get } from '@nestjs/common';
+import { Controller, UseGuards, Post, Body, Get, Param } from '@nestjs/common';
 import { ProductsService } from './products.service';
 import { AuthenticatedGuard } from 'src/auth/auth.guard';
 import { CreateProductDto } from './dto/create-product.dto';
@@ -31,5 +31,13 @@ export class ProductsController {
   @Get()
   async getAllProducts(@User() user: Users): Promise<Products[]> {
     return await this.productsServics.getAllProducts(user);
+  }
+  /**
+   * @url GET 'api/products/:productId'
+   * @returns 특정 상품 아이디의 상품 조회
+   */
+  @Get(':productId')
+  async getProduct(@Param('productId') productId: number, @User() user: Users): Promise<Products> {
+    return await this.productsServics.getProduct(productId);
   }
 }
