@@ -10,7 +10,7 @@ import { UserRank } from 'src/entities/enums/userRank';
 export class ProductsService {
   constructor(
     @InjectRepository(Products)
-    private readonly porductsRepository: Repository<Products>,
+    private readonly productsRepository: Repository<Products>,
   ) {}
   async createProducts(createProductsDto: CreateProductDto, user: Users) {
     const product = new Products();
@@ -23,12 +23,12 @@ export class ProductsService {
     product.stock = createProductsDto.stock;
     product.Author = user;
     //상품  저장
-    const saveProdut = await this.porductsRepository.save(product);
+    const saveProdut = await this.productsRepository.save(product);
     return saveProdut;
   }
   async getAllProducts(user: Users): Promise<Products[]> {
     //로그인 한 유저의 등록 상품만 보여 줍니다.
-    const result = await this.porductsRepository
+    const result = await this.productsRepository
       .createQueryBuilder('products')
       .leftJoin('products.Author', 'users')
       .where('products.deleteAt IS NULL')
@@ -38,12 +38,12 @@ export class ProductsService {
     return result;
   }
   async getProduct(productId: number): Promise<Products> {
-    return await this.porductsRepository.findOne({
+    return await this.productsRepository.findOne({
       where: { productId },
     });
   }
   async deleteProduct(productId: number, user: Users): Promise<DeleteResult> {
-    const result = await this.porductsRepository
+    const result = await this.productsRepository
       .createQueryBuilder('products')
       .leftJoin('products.Author', 'users')
       .where('products.productId =:productId', { productId })
@@ -53,10 +53,10 @@ export class ProductsService {
     if (!result) {
       throw new NotFoundException('상품을 찾을 수 없습니다.');
     }
-    return this.porductsRepository.softDelete(productId);
+    return this.productsRepository.softDelete(productId);
   }
   async updateProduct(productId: number, product: Products) {
-    const result = await this.porductsRepository
+    const result = await this.productsRepository
       .createQueryBuilder('products')
       .leftJoin('products.Author', 'users')
       .update(Products)
