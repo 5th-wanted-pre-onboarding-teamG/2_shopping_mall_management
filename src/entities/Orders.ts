@@ -2,7 +2,7 @@ import { Column, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn } from 'ty
 import { DateColumns } from './embeddeds/dateColumns';
 import { OrderState } from './enums/orderState';
 import { Address } from './embeddeds/address';
-import { UserCoupons } from './UserCoupons';
+import { OwnedCoupons } from './OwnedCoupons';
 import { Payments } from './Payments';
 import { Users } from './Users';
 import { Products } from './Products';
@@ -40,8 +40,8 @@ export class Orders {
   @ManyToOne(() => Products, (products) => products.orders)
   product: Products;
 
-  @OneToMany(() => UserCoupons, (userCoupons) => userCoupons.order)
-  userCoupons: UserCoupons[];
+  @OneToMany(() => OwnedCoupons, (ownedCoupons) => ownedCoupons.order)
+  ownedCoupons: OwnedCoupons[];
 
   @OneToMany(() => Payments, (payments) => payments.order)
   payments: Payments[];
