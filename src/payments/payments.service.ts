@@ -61,10 +61,10 @@ export class PaymentsService {
 
       const ownedCoupons = await entityManager
         .getRepository(OwnedCoupons)
-        .createQueryBuilder('usersCoupons')
+        .createQueryBuilder('ownedCoupons')
         .innerJoinAndSelect(Coupons, 'coupons')
-        .select(['usersCoupons.usersCouponId', 'coupons.couponType', 'coupons.salePrice'])
-        .where('usersCoupons.orderId = :orderId', { orderId })
+        .select(['ownedCoupons.ownedCouponId', 'coupons.couponType', 'coupons.salePrice'])
+        .where('ownedCoupons.orderId = :orderId', { orderId })
         .getOne();
 
       const quantity = existsOrder.quantity;
@@ -74,7 +74,7 @@ export class PaymentsService {
       const { couponType, salePrice } = ownedCoupons.Coupon;
       const totalProductPrice = productPrice * quantity;
       let paymentSalePrice = calculateSalePrice(totalProductPrice, deliveryPrice, couponType, salePrice, countryCode);
-      let paymentPrice = calculatePaymentPrice(totalProductPrice, deliveryPrice, salePrice, countryCode);
+      let paymentPrice = calculatePaymentPrice(totalProductPrice, deliveryPrice, paymentSalePrice, countryCode);
 
       await entityManager.getRepository(Payments).insert({
         paymentState: PaymentState.COMPLETE,
