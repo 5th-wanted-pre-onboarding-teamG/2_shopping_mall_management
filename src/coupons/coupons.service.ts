@@ -33,10 +33,9 @@ export class CouponsService {
     // 쿠폰타입에 따라 salePrice 조정
     const salePrice = this.defineCouponSalePriceByCouponType(_couponType, _salePrice);
     createCouponDto.salePrice = salePrice;
-    console.log(createCouponDto);
 
     // 쿠폰등록
-    // return await this.couponsRepository.createQueryBuilder('coupons').insert().values({}).execute();
+    return await this.couponsRepository.save(createCouponDto);
   }
 
   defineCouponSalePriceByCouponType(couponType: string, salePrice: number) {
@@ -51,7 +50,11 @@ export class CouponsService {
         if (!salePrice) {
           return this.DEFAULT_DELIVERY_COUPON_PRICE;
         }
-        return salePrice;
+
+        if (salePrice > 0 && salePrice < 100) {
+          return salePrice;
+        }
+        throw new BadRequestException('퍼센트(%) 단위 할인 가격은 1 이상 100 이하의 값만 허용합니다.');
       }
       case CouponType.FLAT_RATE: {
         if (!salePrice) {
