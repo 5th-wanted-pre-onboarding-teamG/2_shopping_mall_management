@@ -1,6 +1,6 @@
 import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 import { DateColumns } from './embeddeds/dateColumns';
-import { UserCoupons } from './UserCoupons';
+import { OwnedCoupons } from './OwnedCoupons';
 import { Orders } from './Orders';
 import { UserRank } from './enums/userRank';
 
@@ -32,9 +32,9 @@ export class Users {
   @Column(() => DateColumns, { prefix: false })
   dateColumns: DateColumns;
 
-  @OneToMany(() => UserCoupons, (userCoupons) => userCoupons.user)
-  userCoupons: UserCoupons[];
+  @OneToMany(() => OwnedCoupons, (ownedCoupons) => ownedCoupons.User)
+  OwnedCoupons: OwnedCoupons[];
 
-  @OneToMany(() => Orders, (orders) => orders.user)
-  orders: Orders[];
+  @OneToMany(() => Orders, (orders) => orders.User)
+  Orders: Orders[];
 }

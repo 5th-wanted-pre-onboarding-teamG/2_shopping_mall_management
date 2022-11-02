@@ -4,7 +4,7 @@ import { Orders } from './Orders';
 
 @Entity({ schema: 'product_shopping', name: 'products' })
 export class Products {
-  @PrimaryGeneratedColumn()
+  @PrimaryGeneratedColumn({ type: 'int', name: 'productId' })
   productId: number;
 
   @Column()
@@ -19,6 +19,6 @@ export class Products {
   @Column(() => DateColumns, { prefix: false })
   dateColumns: DateColumns;
 
-  @OneToMany(() => Orders, (orders) => orders.product)
-  orders: Orders[];
+  @OneToMany(() => Orders, (orders) => orders.Product)
+  Orders: Orders[];
 }
