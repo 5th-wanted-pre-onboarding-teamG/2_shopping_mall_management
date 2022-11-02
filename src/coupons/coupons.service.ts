@@ -1,13 +1,13 @@
-import { BadRequestException, Injectable, UnauthorizedException } from '@nestjs/common';
+import { BadRequestException, Injectable, ParseBoolPipe, UnauthorizedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { UserRank } from 'src/entities/enums/userRank';
 import { Users } from 'src/entities/Users';
-import { Repository, DataSource } from 'typeorm';
+import { Repository, DataSource, Not, IsNull } from 'typeorm';
 import { Coupons } from '../entities/Coupons';
 import { CouponType } from 'src/entities/enums/couponType';
 import { OwnedCoupons } from '../entities/OwnedCoupons';
 import { CreateCouponDto } from './dto/create-coupon.dto';
-import { isEnum, IsEnum } from 'class-validator';
+import { isBoolean, IsBoolean, isEnum, IsEnum, isString } from 'class-validator';
 
 @Injectable()
 export class CouponsService {
@@ -19,15 +19,12 @@ export class CouponsService {
     private readonly userOwnCouponsRepository: Repository<OwnedCoupons>,
   ) {}
 
-  DEFAULT_DELIVERY_COUPON_PRICE = 100; // 배송쿠폰 기본값 (100 %)
-  DEFAULT_FLAT_RATE_COUPON_PRICE = 1000; // 정액제 기본값 (1000 원)
-  COUPON_TYPE_DEFAULT_SEARCH_FILTER = [CouponType.PERCENT, CouponType.DELIVERY, CouponType.FLAT_RATE]; // 쿠폰타입검색 기본값
+  private readonly DEFAULT_DELIVERY_COUPON_PRICE = 100; // 배송쿠폰 기본값 (100 %)
+  private readonly DEFAULT_FLAT_RATE_COUPON_PRICE = 1000; // 정액제 기본값 (1000 원)
+  private readonly COUPON_TYPE_DEFAULT_SEARCH_FILTER = [CouponType.PERCENT, CouponType.DELIVERY, CouponType.FLAT_RATE]; // 쿠폰타입검색 기본값
 
   async createCoupon(user: Users, createCouponDto: CreateCouponDto) {
-    // 운영자인지 체크
-    if (user.rank !== UserRank.MANAGER) {
-      throw new UnauthorizedException('쿠폰등록 접근권한이 없습니다.');
-    }
+    this.checkManagerUser(user);
 
     const _couponType = createCouponDto.couponType;
     const _discountedPrice = createCouponDto.discountedPrice;
@@ -40,7 +37,7 @@ export class CouponsService {
     return await this.couponsRepository.save(createCouponDto);
   }
 
-  defineDiscountedPriceByCouponType(couponType: string, discountedPrice: number) {
+  private defineDiscountedPriceByCouponType(couponType: string, discountedPrice: number) {
     switch (couponType) {
       case CouponType.PERCENT: {
         if (discountedPrice > 0 && discountedPrice <= 100) {
@@ -71,16 +68,22 @@ export class CouponsService {
     }
   }
 
-  async getAllCoupons(user: Users, couponType: string) {
-    // 운영자인지 체크
+  private checkManagerUser(user: Users) {
     if (user.rank !== UserRank.MANAGER) {
-      throw new UnauthorizedException('쿠폰조회 접근권한이 없습니다.');
+      throw new UnauthorizedException('접근권한이 없습니다.');
     }
+  }
 
-    // 쿠폰종류 확인
+  private checkCouponType(couponType: string) {
     if (couponType && !isEnum(couponType, CouponType)) {
       throw new BadRequestException('쿠폰종류가 올바르지 않습니다.');
     }
+  }
+
+  async getAllCoupons(user: Users, couponType: string) {
+    this.checkManagerUser(user);
+
+    this.checkCouponType(couponType);
 
     let _couponTypes;
     if (!couponType) {
@@ -96,5 +99,38 @@ export class CouponsService {
       .getRawMany();
 
     return allCoupons;
+  }
+
+  async getOwnedCoupons(user: Users, _userId: number, _couponType?: any, isUsed?: any) {
+    this.checkManagerUser(user);
+    if (isUsed && !isBoolean(isUsed)) {
+      throw new BadRequestException('잘못된 검색 조건입니다.');
+    }
+
+    if (_couponType) {
+      this.checkCouponType(_couponType);
+    }
+
+    let _usedDate = undefined;
+    if (isUsed) {
+      // isUsed: true - 사용한 쿠폰들만 조회
+      // usedDate 가 not null 인 보유쿠폰을 조회
+      _usedDate = { usedDate: Not(IsNull()) };
+    } else if (isUsed === false) {
+      // isUsed: false - 아직 사용하지 않은 쿠폰들만 조회
+      // usedDate 가 null 인 보유쿠폰을 조회
+      _usedDate = { usedDate: IsNull() };
+    }
+
+    return await this.userOwnCouponsRepository
+      .createQueryBuilder('ownedCoupons')
+      .leftJoin('ownedCoupons.Coupon', 'coupons')
+      .leftJoin('ownedCoupons.User', 'users')
+      .where('users.userId = :userId', { userId: _userId })
+      .andWhere({
+        ...(_couponType && { couponType: _couponType }),
+        ...(_usedDate && { usedDate: _usedDate }),
+      })
+      .getMany();
   }
 }
