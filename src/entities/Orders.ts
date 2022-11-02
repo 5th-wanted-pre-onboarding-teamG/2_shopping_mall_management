@@ -10,7 +10,7 @@ import { DeliveryCosts } from './DeliveryCosts';
 
 @Entity({ schema: 'product_shopping', name: 'orders' })
 export class Orders {
-  @PrimaryGeneratedColumn()
+  @PrimaryGeneratedColumn({ type: 'int', name: 'orderId' })
   orderId: number;
 
   @Column({ type: 'enum', name: 'orderState', enum: OrderState })
