@@ -1,4 +1,4 @@
-import { Controller, UseGuards, Post, Body, Get, Param, Delete, ParseIntPipe } from '@nestjs/common';
+import { Controller, UseGuards, Post, Body, Get, Param, Delete, ParseIntPipe, Put } from '@nestjs/common';
 import { ProductsService } from './products.service';
 import { AuthenticatedGuard } from 'src/auth/auth.guard';
 import { CreateProductDto } from './dto/create-product.dto';
@@ -48,5 +48,14 @@ export class ProductsController {
   @Delete(':productId')
   async deleteProduct(@Param('productId', ParseIntPipe) productId: number, @User() user: Users) {
     await this.productsServics.deleteProduct(productId, user);
+  }
+  /**
+   * @url PUT 'api/products/:productId'
+   * @returns 특정 상품 아이디의 상품 수정
+   */
+  @UseGuards(AuthenticatedGuard)
+  @Put(':productId')
+  async updateProduct(@Param('productId') productId: number, @Body() product: Products) {
+    return await this.productsServics.updateProduct(productId, product);
   }
 }

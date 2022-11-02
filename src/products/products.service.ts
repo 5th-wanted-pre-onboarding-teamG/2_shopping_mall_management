@@ -55,4 +55,22 @@ export class ProductsService {
     }
     return this.porductsRepository.softDelete(productId);
   }
+  async updateProduct(productId: number, product: Products) {
+    const result = await this.porductsRepository
+      .createQueryBuilder('products')
+      .leftJoin('products.Author', 'users')
+      .update(Products)
+      .set({
+        name: product.name,
+        price: product.price,
+        stock: product.stock,
+      })
+      .where('products.deleteAt IS NULL')
+      .andWhere('products.productId =:productId', { productId })
+      .execute();
+
+    if (!result) {
+      throw new NotFoundException('상품을 수정 할 수 없습니다.');
+    }
+  }
 }
