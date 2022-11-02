@@ -32,9 +32,9 @@ export class Users {
   @Column(() => DateColumns, { prefix: false })
   dateColumns: DateColumns;
 
-  @OneToMany(() => OwnedCoupons, (ownedCoupons) => ownedCoupons.user)
-  ownedCoupons: OwnedCoupons[];
+  @OneToMany(() => OwnedCoupons, (ownedCoupons) => ownedCoupons.User)
+  OwnedCoupons: OwnedCoupons[];
 
-  @OneToMany(() => Orders, (orders) => orders.user)
-  orders: Orders[];
+  @OneToMany(() => Orders, (orders) => orders.User)
+  Orders: Orders[];
 }

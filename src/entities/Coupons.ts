@@ -1,4 +1,5 @@
-import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, CreateDateColumn, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import { DateColumns } from './embeddeds/dateColumns';
 import { CouponType } from './enums/couponType';
 import { OwnedCoupons } from './OwnedCoupons';
 
@@ -37,10 +38,6 @@ export class Coupons {
   @Column(() => DateColumns, { prefix: false })
   dateColumns: DateColumns;
 
-  /**
-   * 사용자:쿠폰 = 1:N
-   * 사용자가 보유한 쿠폰들을 의미합니다.
-   */
-  @OneToMany(() => OwnedCoupons, (ownedCoupons) => ownedCoupons.coupon)
-  ownedCoupons: OwnedCoupons[];
+  @OneToMany(() => OwnedCoupons, (ownedCoupons) => ownedCoupons.Coupon)
+  OwnedCoupons: OwnedCoupons[];
 }

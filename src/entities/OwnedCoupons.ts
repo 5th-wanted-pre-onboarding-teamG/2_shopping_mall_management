@@ -1,11 +1,11 @@
-import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { Users } from './Users';
 import { Coupons } from './Coupons';
 import { Orders } from './Orders';
 
 @Entity({ schema: 'product_shopping', name: 'ownedCoupons' })
 export class OwnedCoupons {
-  @PrimaryGeneratedColumn()
+  @PrimaryGeneratedColumn({ type: 'int', name: 'ownedCouponId' })
   ownedCouponId: number;
 
   /**
@@ -32,23 +32,33 @@ export class OwnedCoupons {
   @Column({ default: false, nullable: false })
   isExtendDate: boolean;
 
-  /**
-   * 쿠폰 사용자(유저)
-   * 쿠폰:유저 = N:1
-   */
-  @ManyToOne(() => Users, (users) => users.ownedCoupons)
-  user: Users;
+  @Column('int', { primary: true, name: 'UserId' })
+  UserId: number;
 
-  /**
-   * 갖고 있는 쿠폰
-   * 보유쿠폰:쿠폰 = 1:N
-   */
-  @ManyToOne(() => Coupons, (coupons) => coupons.ownedCoupons)
-  coupon: Coupons;
+  @Column('int', { primary: true, name: 'CouponId' })
+  CouponId: number;
 
-  /**
-   * 보유쿠폰:주문 = N:1
-   */
-  @ManyToOne(() => Orders, (orders) => orders.ownedCoupons)
-  order: Orders;
+  @Column('int', { nullable: true, name: 'OrderId' })
+  OrderId: number;
+
+  @ManyToOne(() => Users, (users) => users.OwnedCoupons, {
+    onDelete: 'CASCADE',
+    onUpdate: 'CASCADE',
+  })
+  @JoinColumn([{ name: 'UserId', referencedColumnName: 'userId' }])
+  User: Users;
+
+  @ManyToOne(() => Coupons, (coupons) => coupons.OwnedCoupons, {
+    onDelete: 'CASCADE',
+    onUpdate: 'CASCADE',
+  })
+  @JoinColumn([{ name: 'CouponId', referencedColumnName: 'couponId' }])
+  Coupon: Coupons;
+
+  @ManyToOne(() => Orders, (orders) => orders.OwnedCoupons, {
+    onDelete: 'SET NULL',
+    onUpdate: 'CASCADE',
+  })
+  @JoinColumn([{ name: 'OrderId', referencedColumnName: 'orderId' }])
+  Order: Orders;
 }

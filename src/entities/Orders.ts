@@ -1,4 +1,4 @@
-import { Column, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 import { DateColumns } from './embeddeds/dateColumns';
 import { OrderState } from './enums/orderState';
 import { Address } from './embeddeds/address';
@@ -10,7 +10,7 @@ import { DeliveryCosts } from './DeliveryCosts';
 
 @Entity({ schema: 'product_shopping', name: 'orders' })
 export class Orders {
-  @PrimaryGeneratedColumn()
+  @PrimaryGeneratedColumn({ type: 'int', name: 'orderId' })
   orderId: number;
 
   @Column({ type: 'enum', name: 'orderState', enum: OrderState })
@@ -31,18 +31,39 @@ export class Orders {
   @Column(() => DateColumns, { prefix: false })
   dateColumns: DateColumns;
 
-  @ManyToOne(() => Users, (users) => users.orders)
-  user: Users;
+  @Column('int', { primary: true, name: 'UserId' })
+  UserId: number;
 
-  @ManyToOne(() => DeliveryCosts, (deliveryCosts) => deliveryCosts.orders)
-  deliveryCost: DeliveryCosts;
+  @Column('int', { nullable: true, name: 'DeliveryCostId' })
+  DeliveryCostId: number;
 
-  @ManyToOne(() => Products, (products) => products.orders)
-  product: Products;
+  @Column('int', { nullable: true, name: 'ProductId' })
+  ProductId: number;
 
-  @OneToMany(() => OwnedCoupons, (ownedCoupons) => ownedCoupons.order)
-  ownedCoupons: OwnedCoupons[];
+  @ManyToOne(() => Users, (users) => users.Orders, {
+    onDelete: 'CASCADE',
+    onUpdate: 'CASCADE',
+  })
+  @JoinColumn([{ name: 'UserId', referencedColumnName: 'userId' }])
+  User: Users;
 
-  @OneToMany(() => Payments, (payments) => payments.order)
-  payments: Payments[];
+  @ManyToOne(() => DeliveryCosts, (deliveryCosts) => deliveryCosts.Orders, {
+    onDelete: 'SET NULL',
+    onUpdate: 'CASCADE',
+  })
+  @JoinColumn([{ name: 'DeliveryCostId', referencedColumnName: 'deliveryCostId' }])
+  DeliveryCost: DeliveryCosts;
+
+  @ManyToOne(() => Products, (products) => products.Orders, {
+    onDelete: 'SET NULL',
+    onUpdate: 'CASCADE',
+  })
+  @JoinColumn([{ name: 'ProductId', referencedColumnName: 'productId' }])
+  Product: Products;
+
+  @OneToMany(() => OwnedCoupons, (ownedCoupons) => ownedCoupons.Order)
+  OwnedCoupons: OwnedCoupons[];
+
+  @OneToMany(() => Payments, (payments) => payments.Order)
+  Payments: Payments[];
 }
