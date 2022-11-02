@@ -1,10 +1,11 @@
-import { BadRequestException, ForbiddenException, Injectable } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Countries } from 'src/entities/Countries';
 import { UserRank } from 'src/entities/enums/userRank';
 import { Users } from 'src/entities/Users';
-import { Like, Repository } from 'typeorm';
+import { Like, NotBrackets, Repository } from 'typeorm';
 import { CreateCountriesDto } from './dto/create-countries.dto';
+import { UpdateCountriesDto } from './dto/update-countries.dto';
 
 @Injectable()
 export class CountriesService {
@@ -70,5 +71,34 @@ export class CountriesService {
     }
 
     return await this.countriesRepository.find({ where });
+  }
+
+  /**
+   * @param countriesId 수정하려는 국적 아이디
+   * @param updateCountriesDto 국정정보 {국적코드, 국적번호, 국적명}
+   * @description 국적정보를 수정합니다
+   * @returns 국적정보 수정 결과
+   */
+  async updateCountriesById(countryId: Countries['countryId'], updateCountriesDto: UpdateCountriesDto, user: Users) {
+    // 관리자가 아니라면 403 응답
+    if (user.rank !== UserRank.MANAGER) {
+      throw new ForbiddenException();
+    }
+
+    const isExist = await this.countriesRepository.countBy({ countryId });
+    const isDuplicatedName = await this.countriesRepository
+      .createQueryBuilder('countries')
+      .where('countries.name = :name', { name: updateCountriesDto.name })
+      .andWhere('countries.countryId != :countryId', { countryId })
+      .getOne();
+
+    // 존재하지않는 경우 404 또는 중복된 경우 400 응답
+    if (!isExist) {
+      throw new NotFoundException('존재하지않는 국적입니다.');
+    } else if (isDuplicatedName) {
+      throw new BadRequestException('중복된 국적명입니다.');
+    }
+
+    return await this.countriesRepository.update({ countryId }, updateCountriesDto);
   }
 }
