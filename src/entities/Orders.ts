@@ -61,8 +61,8 @@ export class Orders {
   @JoinColumn([{ name: 'ProductId', referencedColumnName: 'productId' }])
   Product: Products;
 
-  @OneToMany(() => UserCoupons, (userCoupons) => userCoupons.order)
-  userCoupons: UserCoupons[];
+  @OneToMany(() => UserCoupons, (userCoupons) => userCoupons.Order)
+  UserCoupons: UserCoupons[];
 
   @OneToMany(() => Payments, (payments) => payments.order)
   payments: Payments[];

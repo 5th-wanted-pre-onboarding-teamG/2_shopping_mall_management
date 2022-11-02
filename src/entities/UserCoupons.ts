@@ -1,4 +1,4 @@
-import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { Users } from './Users';
 import { Coupons } from './Coupons';
 import { Orders } from './Orders';
@@ -14,12 +14,19 @@ export class UserCoupons {
   @Column()
   expirationDate: Date;
 
+  @Column('int', { primary: true, name: 'OrderId' })
+  OrderId: number;
+
   @ManyToOne(() => Users, (users) => users.userCoupons)
   user: Users;
 
   @ManyToOne(() => Coupons, (coupons) => coupons.userCoupons)
   coupon: Coupons;
 
-  @ManyToOne(() => Orders, (orders) => orders.userCoupons)
-  order: Orders;
+  @ManyToOne(() => Orders, (orders) => orders.UserCoupons, {
+    onDelete: 'SET NULL',
+    onUpdate: 'CASCADE',
+  })
+  @JoinColumn([{ name: 'OrderId', referencedColumnName: 'orderId' }])
+  Order: Orders;
 }
