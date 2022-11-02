@@ -30,7 +30,7 @@ export class PaymentsController {
   @UseGuards(AuthenticatedGuard)
   @Get('users')
   async getPaymentsByUser(@User() user: Users) {
-    await this.usersService.getPaymentsByUser(user);
+    return this.usersService.getPaymentsByUser(user);
   }
 
   /**
@@ -40,6 +40,6 @@ export class PaymentsController {
   @UseGuards(OperateGuard)
   @Get()
   async getPaymentsBySearch(@Query() searchPayment: SearchPayments) {
-    await this.usersService.getPaymentsBySearch(searchPayment);
+    return this.usersService.getPaymentsBySearch(searchPayment);
   }
 }
