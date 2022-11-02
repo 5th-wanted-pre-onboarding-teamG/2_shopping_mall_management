@@ -7,6 +7,7 @@ import { Coupons } from '../entities/Coupons';
 import { CouponType } from 'src/entities/enums/couponType';
 import { OwnedCoupons } from '../entities/OwnedCoupons';
 import { CreateCouponDto } from './dto/create-coupon.dto';
+import { isEnum, IsEnum } from 'class-validator';
 
 @Injectable()
 export class CouponsService {
@@ -20,6 +21,7 @@ export class CouponsService {
 
   DEFAULT_DELIVERY_COUPON_PRICE = 100; // 배송쿠폰 기본값 (100 %)
   DEFAULT_FLAT_RATE_COUPON_PRICE = 1000; // 정액제 기본값 (1000 원)
+  COUPON_TYPE_DEFAULT_SEARCH_FILTER = [CouponType.PERCENT, CouponType.DELIVERY, CouponType.FLAT_RATE]; // 쿠폰타입검색 기본값
 
   async createCoupon(user: Users, createCouponDto: CreateCouponDto) {
     // 운영자인지 체크
@@ -67,5 +69,32 @@ export class CouponsService {
         return discountedPrice;
       }
     }
+  }
+
+  async getAllCoupons(user: Users, couponType: string) {
+    // 운영자인지 체크
+    if (user.rank !== UserRank.MANAGER) {
+      throw new UnauthorizedException('쿠폰조회 접근권한이 없습니다.');
+    }
+
+    // 쿠폰종류 확인
+    if (couponType && !isEnum(couponType, CouponType)) {
+      throw new BadRequestException('쿠폰종류가 올바르지 않습니다.');
+    }
+
+    let _couponTypes;
+    if (!couponType) {
+      // couponType 파라미터가 존재하지 않을때 - 기본필터로 설정
+      _couponTypes = this.COUPON_TYPE_DEFAULT_SEARCH_FILTER;
+    } else {
+      _couponTypes = [couponType];
+    }
+
+    const allCoupons = await this.couponsRepository
+      .createQueryBuilder('coupons')
+      .where('couponType IN (:couponTypes)', { couponTypes: _couponTypes })
+      .getRawMany();
+
+    return allCoupons;
   }
 }
