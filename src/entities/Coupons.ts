@@ -1,11 +1,10 @@
 import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
-import { DateColumns } from './embeddeds/dateColumns';
 import { CouponType } from './enums/couponType';
 import { OwnedCoupons } from './OwnedCoupons';
 
 @Entity({ schema: 'product_shopping', name: 'coupons' })
 export class Coupons {
-  @PrimaryGeneratedColumn()
+  @PrimaryGeneratedColumn({ type: 'int', name: 'couponId' })
   couponId: number;
 
   @Column()
