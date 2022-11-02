@@ -1,6 +1,8 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Countries } from 'src/entities/Countries';
+import { UserRank } from 'src/entities/enums/userRank';
+import { Users } from 'src/entities/Users';
 import { Repository } from 'typeorm';
 import { CreateCountriesDto } from './dto/create-countries.dto';
 
@@ -13,13 +15,17 @@ export class CountriesService {
 
   /**
    * @url POST '/api/countires'
-   * @param createCountriesDto 국적정보 {국적코드, 국적번호, 국적명}
+   * @body createCountriesDto 국적정보 {국적코드, 국적번호, 국적명}
    * @description 새로운 국정정보를 생성합니다
    * @returns 국적정보 생성 결과
    */
-  async createCountries(createCountriesDto: CreateCountriesDto) {
+  async createCountries(user: Users, createCountriesDto: CreateCountriesDto) {
     const { name, countryCode } = createCountriesDto;
     const isMatched = /\+\d+/.test(countryCode);
+
+    if (user.rank !== UserRank.MANAGER) {
+      throw new ForbiddenException();
+    }
 
     // 국적번호 형태(+number)가 잘못된 경우 400 응답
     if (isMatched) {
