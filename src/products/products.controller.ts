@@ -1,9 +1,10 @@
-import { Controller, UseGuards, Post, Body } from '@nestjs/common';
+import { Controller, UseGuards, Post, Body, Get } from '@nestjs/common';
 import { ProductsService } from './products.service';
 import { AuthenticatedGuard } from 'src/auth/auth.guard';
 import { CreateProductDto } from './dto/create-product.dto';
 import { Users } from 'src/entities/Users';
 import { User } from 'src/auth/auth.decorator';
+import { Products } from 'src/entities/Products';
 @Controller('products')
 export class ProductsController {
   constructor(private readonly productsServics: ProductsService) {}
@@ -19,5 +20,16 @@ export class ProductsController {
   @Post()
   async createProduct(@Body() createProductsDto: CreateProductDto, @User() user: Users) {
     return await this.productsServics.createProducts(createProductsDto, user);
+  }
+  /**
+   * @url GET 'api/products'
+   * @User user:현재 로그인 된 유저를 나타냅니다.
+   * @description 로그인 유저가 생성한 전체 상품을 조회 합니다.
+   * @returns 상품 조회
+   */
+  @UseGuards(AuthenticatedGuard)
+  @Get()
+  async getAllProducts(@User() user: Users): Promise<Products[]> {
+    return await this.productsServics.getAllProducts(user);
   }
 }

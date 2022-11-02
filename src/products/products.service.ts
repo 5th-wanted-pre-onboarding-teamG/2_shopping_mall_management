@@ -26,4 +26,15 @@ export class ProductsService {
     const saveProdut = await this.porductsRepository.save(product);
     return saveProdut;
   }
+  async getAllProducts(user: Users): Promise<Products[]> {
+    //로그인 한 유저의 등록 상품만 보여 줍니다.
+    const result = await this.porductsRepository
+      .createQueryBuilder('products')
+      .leftJoin('products.Author', 'users')
+      .where('products.deleteAt IS NULL')
+      .andWhere('products.Author =:userId', { userId: user.userId })
+      .getMany();
+
+    return result;
+  }
 }
