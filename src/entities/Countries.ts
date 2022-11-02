@@ -15,6 +15,6 @@ export class Countries {
   @Column({ unique: true })
   name: string;
 
-  @OneToMany(() => DeliveryCosts, (deliveryCosts) => deliveryCosts.country)
-  deliveryCosts: DeliveryCosts[];
+  @OneToMany(() => DeliveryCosts, (deliveryCosts) => deliveryCosts.Country)
+  DeliveryCosts: DeliveryCosts[];
 }
