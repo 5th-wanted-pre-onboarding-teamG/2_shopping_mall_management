@@ -20,6 +20,6 @@ export class Coupons {
   @Column(() => DateColumns, { prefix: false })
   dateColumns: DateColumns;
 
-  @OneToMany(() => UserCoupons, (userCoupons) => userCoupons.coupon)
-  userCoupons: UserCoupons[];
+  @OneToMany(() => UserCoupons, (userCoupons) => userCoupons.Coupon)
+  UserCoupons: UserCoupons[];
 }
