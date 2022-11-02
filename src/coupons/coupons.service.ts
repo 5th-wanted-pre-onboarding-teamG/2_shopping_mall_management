@@ -33,14 +33,14 @@ export class CouponsService {
     const _discountedPrice = createCouponDto.discountedPrice;
 
     // 쿠폰타입에 따라 discountedPrice 조정
-    const discountedPrice = this.defineCouponDiscountedPriceByCouponType(_couponType, _discountedPrice);
+    const discountedPrice = this.defineDiscountedPriceByCouponType(_couponType, _discountedPrice);
     createCouponDto.discountedPrice = discountedPrice;
 
     // 쿠폰등록
     return await this.couponsRepository.save(createCouponDto);
   }
 
-  defineCouponDiscountedPriceByCouponType(couponType: string, discountedPrice: number) {
+  defineDiscountedPriceByCouponType(couponType: string, discountedPrice: number) {
     switch (couponType) {
       case CouponType.PERCENT: {
         if (discountedPrice > 0 && discountedPrice <= 100) {
