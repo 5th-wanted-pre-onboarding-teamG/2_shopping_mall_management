@@ -4,7 +4,7 @@ import { Orders } from './Orders';
 
 @Entity({ schema: 'product_shopping', name: 'deliveryCosts' })
 export class DeliveryCosts {
-  @PrimaryGeneratedColumn()
+  @PrimaryGeneratedColumn({ type: 'int', name: 'deliveryCostId' })
   deliveryCostId: number;
 
   @Column()
