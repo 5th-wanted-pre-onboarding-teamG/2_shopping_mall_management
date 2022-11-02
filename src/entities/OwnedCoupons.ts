@@ -6,7 +6,7 @@ import { Orders } from './Orders';
 @Entity({ schema: 'product_shopping', name: 'ownedCoupons' })
 export class OwnedCoupons {
   @PrimaryGeneratedColumn()
-  userCouponId: number;
+  ownedCouponId: number;
 
   /**
    * 쿠폰 발행 날짜
