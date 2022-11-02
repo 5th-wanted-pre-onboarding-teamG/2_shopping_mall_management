@@ -31,11 +31,18 @@ export class Orders {
   @Column(() => DateColumns, { prefix: false })
   dateColumns: DateColumns;
 
+  @Column('int', { primary: true, name: 'UserId' })
+  UserId: number;
+
   @Column('int', { primary: true, name: 'DeliveryCostId' })
   DeliveryCostId: number;
 
-  @ManyToOne(() => Users, (users) => users.orders)
-  user: Users;
+  @ManyToOne(() => Users, (users) => users.Orders, {
+    onDelete: 'CASCADE',
+    onUpdate: 'CASCADE',
+  })
+  @JoinColumn([{ name: 'UserId', referencedColumnName: 'userId' }])
+  User: Users;
 
   @ManyToOne(() => DeliveryCosts, (deliveryCosts) => deliveryCosts.Orders, {
     onDelete: 'SET NULL',

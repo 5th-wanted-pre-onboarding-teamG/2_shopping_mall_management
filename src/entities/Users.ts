@@ -35,6 +35,6 @@ export class Users {
   @OneToMany(() => UserCoupons, (userCoupons) => userCoupons.user)
   userCoupons: UserCoupons[];
 
-  @OneToMany(() => Orders, (orders) => orders.user)
-  orders: Orders[];
+  @OneToMany(() => Orders, (orders) => orders.User)
+  Orders: Orders[];
 }
