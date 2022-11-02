@@ -9,7 +9,5 @@ export class CreateUserDto {
 
   rank: UserRank;
 
-  age: number;
-
   phone: string;
 }
