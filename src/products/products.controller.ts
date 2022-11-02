@@ -1,10 +1,11 @@
 import { Controller, UseGuards, Post, Body, Get, Param, Delete, ParseIntPipe, Put } from '@nestjs/common';
 import { ProductsService } from './products.service';
-import { AuthenticatedGuard } from 'src/auth/auth.guard';
+import { OperateGuard } from 'src/auth/auth.guard';
 import { CreateProductDto } from './dto/create-product.dto';
 import { Users } from 'src/entities/Users';
 import { User } from 'src/auth/auth.decorator';
 import { Products } from 'src/entities/Products';
+
 @Controller('products')
 export class ProductsController {
   constructor(private readonly productsServics: ProductsService) {}
@@ -16,7 +17,7 @@ export class ProductsController {
    * @description 유저가 상품을 생성합니다.
    * @returns 상품 생성
    */
-  @UseGuards(AuthenticatedGuard)
+  @UseGuards(OperateGuard)
   @Post()
   async createProduct(@Body() createProductsDto: CreateProductDto, @User() user: Users) {
     return await this.productsServics.createProducts(createProductsDto, user);
@@ -27,7 +28,7 @@ export class ProductsController {
    * @description 로그인 유저가 생성한 전체 상품을 조회 합니다.
    * @returns 상품 조회
    */
-  @UseGuards(AuthenticatedGuard)
+  @UseGuards(OperateGuard)
   @Get()
   async getAllProducts(@User() user: Users): Promise<Products[]> {
     return await this.productsServics.getAllProducts(user);
@@ -37,14 +38,14 @@ export class ProductsController {
    * @returns 특정 상품 아이디의 상품 조회
    */
   @Get(':productId')
-  async getProduct(@Param('productId') productId: number, @User() user: Users): Promise<Products> {
+  async getProduct(@Param('productId') productId: number): Promise<Products> {
     return await this.productsServics.getProduct(productId);
   }
   /**
    * @url DELETE 'api/products/:productId'
    * @returns 특정 상품 아이디의 상품 삭제
    */
-  @UseGuards(AuthenticatedGuard)
+  @UseGuards(OperateGuard)
   @Delete(':productId')
   async deleteProduct(@Param('productId', ParseIntPipe) productId: number, @User() user: Users) {
     await this.productsServics.deleteProduct(productId, user);
@@ -53,7 +54,7 @@ export class ProductsController {
    * @url PUT 'api/products/:productId'
    * @returns 특정 상품 아이디의 상품 수정
    */
-  @UseGuards(AuthenticatedGuard)
+  @UseGuards(OperateGuard)
   @Put(':productId')
   async updateProduct(@Param('productId') productId: number, @Body() product: Products) {
     return await this.productsServics.updateProduct(productId, product);
