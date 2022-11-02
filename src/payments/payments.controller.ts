@@ -11,6 +11,7 @@ export class PaymentsController {
   constructor(private readonly usersService: PaymentsService) {}
 
   /**
+   * @Url POST /api/payments
    * 결제 내역 등록
    * @param user 세션에 저장된 유저 정보
    * @param createPaymentDto 결제 등록에 필요한 정보
@@ -24,6 +25,7 @@ export class PaymentsController {
   }
 
   /**
+   * @Url GET /api/payments/users
    * 유저의 개인 결제 내역
    * @param user 세션에 저장된 유저 정보
    */
@@ -34,6 +36,7 @@ export class PaymentsController {
   }
 
   /**
+   * @Url GET /api/payments
    * 결제 내역 검색 조회
    * @param searchPayment 검색어, 페이지 등 검색 조건
    */

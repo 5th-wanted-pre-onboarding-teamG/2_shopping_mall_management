@@ -40,6 +40,7 @@ export class PaymentsService {
   async createPayment(createPaymentDto: CreatePaymentDto, user: Users) {
     await wrapTransaction(this.dataSource, async (entityManager: EntityManager) => {
       const orderId = createPaymentDto.orderId;
+      // 결제할 주문 확인
       const existsOrder = await entityManager
         .getRepository(Orders)
         .createQueryBuilder('orders')
@@ -59,14 +60,17 @@ export class PaymentsService {
         throw new NotFoundException('주문 정보를 찾을 수 없습니다.');
       }
 
+      // 사용할 쿠폰 확인
+      const ownedCouponId = createPaymentDto.ownedCouponId;
       const ownedCoupons = await entityManager
         .getRepository(OwnedCoupons)
         .createQueryBuilder('ownedCoupons')
         .innerJoinAndSelect(Coupons, 'coupons')
         .select(['ownedCoupons.ownedCouponId', 'coupons.couponType', 'coupons.salePrice'])
-        .where('ownedCoupons.orderId = :orderId', { orderId })
+        .where('ownedCoupons.ownedCouponId = :ownedCouponId', { ownedCouponId })
         .getOne();
 
+      // 결제 정보에 저장할 금액 게산
       const quantity = existsOrder.quantity;
       const productPrice = existsOrder.Product?.price;
       const deliveryPrice = existsOrder.DeliveryCost?.price;
@@ -76,6 +80,7 @@ export class PaymentsService {
       let paymentSalePrice = calculateSalePrice(totalProductPrice, deliveryPrice, couponType, salePrice, countryCode);
       let paymentPrice = calculatePaymentPrice(totalProductPrice, deliveryPrice, paymentSalePrice, countryCode);
 
+      // 결제 정보 등록
       await entityManager.getRepository(Payments).insert({
         paymentState: PaymentState.COMPLETE,
         salePrice: paymentSalePrice,
@@ -84,10 +89,12 @@ export class PaymentsService {
         User: user,
       });
 
+      // 주문의 상태를 결제 완료로 변경
       await entityManager.getRepository(Orders).update(orderId, {
         orderState: OrderState.PAYMENT_COMPLETE,
       });
 
+      // 쿠폰을 사용 상태로 변경
       await entityManager.getRepository(OwnedCoupons).update(ownedCoupons.ownedCouponId, {
         Order: existsOrder,
       });
