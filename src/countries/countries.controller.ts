@@ -1,4 +1,5 @@
-import { Body, Controller, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Post, Req, UseGuards } from '@nestjs/common';
+import { Request } from 'express';
 import { User } from 'src/auth/auth.decorator';
 import { AuthenticatedGuard } from 'src/auth/auth.guard';
 import { Users } from 'src/entities/Users';
@@ -19,5 +20,17 @@ export class CountriesController {
   @Post()
   async createCountries(@Body() createCountriesDto: CreateCountriesDto, @User() user: Users) {
     return await this.countriesService.createCountries(user, createCountriesDto);
+  }
+
+  /**
+   * @url GET '/api/countries'
+   * @param req.originalUrl 검색 키워드를 포함한 요청 URL {국적코드, 국적번호, 국적명}
+   * @description 국적정보를 검색합니다
+   * @returns 국적정보 검색 결과
+   */
+  @UseGuards(AuthenticatedGuard)
+  @Get()
+  async searchCountries(@Req() req: Request, @User() user: Users) {
+    return await this.countriesService.searchCountries(user, req.originalUrl);
   }
 }
