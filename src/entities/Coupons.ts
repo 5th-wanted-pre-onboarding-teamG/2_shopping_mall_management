@@ -23,7 +23,7 @@ export class Coupons {
    * 정액제(₩): 최소값 1000원
    */
   @Column()
-  salePrice: number;
+  discountedPrice: number;
 
   /**
    * 유효기간

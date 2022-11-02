@@ -28,43 +28,43 @@ export class CouponsService {
     }
 
     const _couponType = createCouponDto.couponType;
-    const _salePrice = createCouponDto.salePrice;
+    const _discountedPrice = createCouponDto.discountedPrice;
 
-    // 쿠폰타입에 따라 salePrice 조정
-    const salePrice = this.defineCouponSalePriceByCouponType(_couponType, _salePrice);
-    createCouponDto.salePrice = salePrice;
+    // 쿠폰타입에 따라 discountedPrice 조정
+    const discountedPrice = this.defineCouponDiscountedPriceByCouponType(_couponType, _discountedPrice);
+    createCouponDto.discountedPrice = discountedPrice;
 
     // 쿠폰등록
     return await this.couponsRepository.save(createCouponDto);
   }
 
-  defineCouponSalePriceByCouponType(couponType: string, salePrice: number) {
+  defineCouponDiscountedPriceByCouponType(couponType: string, discountedPrice: number) {
     switch (couponType) {
       case CouponType.PERCENT: {
-        if (salePrice > 0 && salePrice <= 100) {
-          return salePrice;
+        if (discountedPrice > 0 && discountedPrice <= 100) {
+          return discountedPrice;
         }
         throw new BadRequestException('퍼센트(%) 단위 할인 가격은 1 이상 100 이하의 값만 허용합니다.');
       }
       case CouponType.DELIVERY: {
-        if (!salePrice) {
+        if (!discountedPrice) {
           return this.DEFAULT_DELIVERY_COUPON_PRICE;
         }
 
-        if (salePrice > 0 && salePrice < 100) {
-          return salePrice;
+        if (discountedPrice > 0 && discountedPrice < 100) {
+          return discountedPrice;
         }
         throw new BadRequestException('퍼센트(%) 단위 할인 가격은 1 이상 100 이하의 값만 허용합니다.');
       }
       case CouponType.FLAT_RATE: {
-        if (!salePrice) {
+        if (!discountedPrice) {
           return this.DEFAULT_FLAT_RATE_COUPON_PRICE;
         }
 
-        if (salePrice < this.DEFAULT_FLAT_RATE_COUPON_PRICE) {
+        if (discountedPrice < this.DEFAULT_FLAT_RATE_COUPON_PRICE) {
           throw new BadRequestException('정액(원: ₩) 단위 할인가격은 최소 1000원 이상 입니다.');
         }
-        return salePrice;
+        return discountedPrice;
       }
     }
   }

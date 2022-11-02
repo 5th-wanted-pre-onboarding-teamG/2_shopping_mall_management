@@ -13,5 +13,5 @@ export class CreateCouponDto {
   validPeriod: number; // 유효기간
 
   @IsInt()
-  salePrice?: number; // 쿠폰 할인가격
+  discountedPrice?: number; // 쿠폰 할인가격
 }
