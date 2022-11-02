@@ -34,10 +34,10 @@ export class Orders {
   @Column('int', { primary: true, name: 'UserId' })
   UserId: number;
 
-  @Column('int', { primary: true, name: 'DeliveryCostId' })
+  @Column('int', { nullable: true, name: 'DeliveryCostId' })
   DeliveryCostId: number;
 
-  @Column('int', { primary: true, name: 'ProductId' })
+  @Column('int', { nullable: true, name: 'ProductId' })
   ProductId: number;
 
   @ManyToOne(() => Users, (users) => users.Orders, {
