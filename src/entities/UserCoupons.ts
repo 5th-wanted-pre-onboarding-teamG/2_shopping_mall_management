@@ -14,14 +14,21 @@ export class UserCoupons {
   @Column()
   expirationDate: Date;
 
+  @Column('int', { primary: true, name: 'UserId' })
+  UserId: number;
+
   @Column('int', { primary: true, name: 'CouponId' })
   CouponId: number;
 
   @Column('int', { primary: true, name: 'OrderId' })
   OrderId: number;
 
-  @ManyToOne(() => Users, (users) => users.userCoupons)
-  user: Users;
+  @ManyToOne(() => Users, (users) => users.UserCoupons, {
+    onDelete: 'CASCADE',
+    onUpdate: 'CASCADE',
+  })
+  @JoinColumn([{ name: 'UserId', referencedColumnName: 'userId' }])
+  User: Users;
 
   @ManyToOne(() => Coupons, (coupons) => coupons.UserCoupons, {
     onDelete: 'CASCADE',

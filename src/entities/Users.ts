@@ -32,8 +32,8 @@ export class Users {
   @Column(() => DateColumns, { prefix: false })
   dateColumns: DateColumns;
 
-  @OneToMany(() => UserCoupons, (userCoupons) => userCoupons.user)
-  userCoupons: UserCoupons[];
+  @OneToMany(() => UserCoupons, (userCoupons) => userCoupons.User)
+  UserCoupons: UserCoupons[];
 
   @OneToMany(() => Orders, (orders) => orders.User)
   Orders: Orders[];
