@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, ParseIntPipe, Post, Put, Req, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, ParseIntPipe, Post, Put, Req, UseGuards } from '@nestjs/common';
 import { Request } from 'express';
 import { User } from 'src/auth/auth.decorator';
 import { AuthenticatedGuard } from 'src/auth/auth.guard';
@@ -51,5 +51,17 @@ export class CountriesController {
     @User() user: Users,
   ) {
     return await this.countriesService.updateCountriesById(countryId, updateCountriesDto, user);
+  }
+
+  /**
+   * @url DELETE '/api/countries'
+   * @param countryId 삭제하려는 국적 아이디
+   * @description 국적정보를 삭제합니다
+   * @returns 국적정보 삭제 결과
+   */
+  @UseGuards(AuthenticatedGuard)
+  @Delete(':countryId')
+  async deleteCountreisById(@Param('countryId', ParseIntPipe) countryId: Countries['countryId'], @User() user: Users) {
+    return await this.countriesService.deleteCountreisById(countryId, user);
   }
 }

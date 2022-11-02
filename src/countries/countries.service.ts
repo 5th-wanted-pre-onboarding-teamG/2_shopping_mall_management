@@ -70,6 +70,7 @@ export class CountriesService {
       where = [{ name: Like(`%${queryKeyword}$`) }, { countryCode: Like(`%${queryKeyword}%`) }];
     }
 
+    // findOneByOrFail
     return await this.countriesRepository.find({ where });
   }
 
@@ -100,5 +101,25 @@ export class CountriesService {
     }
 
     return await this.countriesRepository.update({ countryId }, updateCountriesDto);
+  }
+
+  /**
+   * @url DELETE '/api/countries'
+   * @param countryId 삭제하려는 국적 아이디
+   * @description 국적정보를 삭제합니다
+   * @returns 국적정보 삭제 결과
+   */
+  async deleteCountreisById(countryId: Countries['countryId'], user: Users): Promise<void> {
+    // 관리자가 아니라면 403 응답
+    if (user.rank !== UserRank.MANAGER) {
+      throw new ForbiddenException();
+    }
+
+    const isAffected = await this.countriesRepository.delete(countryId);
+
+    // 삭제된 국적이 없는 경우 404 응답
+    if (!isAffected) {
+      throw new NotFoundException('존재하지않는 국적입니다.');
+    }
   }
 }
