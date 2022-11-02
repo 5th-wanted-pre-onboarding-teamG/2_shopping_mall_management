@@ -2,7 +2,7 @@ import { Column, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColum
 import { DateColumns } from './embeddeds/dateColumns';
 import { OrderState } from './enums/orderState';
 import { Address } from './embeddeds/address';
-import { UserCoupons } from './UserCoupons';
+import { OwnedCoupons } from './OwnedCoupons';
 import { Payments } from './Payments';
 import { Users } from './Users';
 import { Products } from './Products';
@@ -61,8 +61,8 @@ export class Orders {
   @JoinColumn([{ name: 'ProductId', referencedColumnName: 'productId' }])
   Product: Products;
 
-  @OneToMany(() => UserCoupons, (userCoupons) => userCoupons.Order)
-  UserCoupons: UserCoupons[];
+  @OneToMany(() => OwnedCoupons, (ownedCoupons) => ownedCoupons.Order)
+  OwnedCoupons: OwnedCoupons[];
 
   @OneToMany(() => Payments, (payments) => payments.Order)
   Payments: Payments[];
