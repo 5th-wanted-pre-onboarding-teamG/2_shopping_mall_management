@@ -70,8 +70,9 @@ export class PaymentsService {
 
       const { quantity, productPrice, deliveryPrice, countryCode } = existsOrder;
       const { couponType, sale } = userCoupons.coupon;
-      let salePrice = calculateSalePrice(productPrice, quantity, deliveryPrice, couponType, sale, countryCode);
-      let paymentPrice = calculatePaymentPrice(productPrice, quantity, deliveryPrice, salePrice, countryCode);
+      const totalProductPrice = productPrice * quantity;
+      let salePrice = calculateSalePrice(totalProductPrice, deliveryPrice, couponType, sale, countryCode);
+      let paymentPrice = calculatePaymentPrice(totalProductPrice, deliveryPrice, salePrice, countryCode);
 
       await entityManager.getRepository(Payments).insert({
         paymentState: PaymentState.COMPLETE,
