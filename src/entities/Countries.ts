@@ -3,7 +3,7 @@ import { DeliveryCosts } from './DeliveryCosts';
 
 @Entity({ schema: 'product_shopping', name: 'countries' })
 export class Countries {
-  @PrimaryGeneratedColumn()
+  @PrimaryGeneratedColumn({ type: 'int', name: 'countryId' })
   countryId: number;
 
   @Column()
@@ -15,6 +15,6 @@ export class Countries {
   @Column({ unique: true })
   name: string;
 
-  @OneToMany(() => DeliveryCosts, (deliveryCosts) => deliveryCosts.country)
-  deliveryCosts: DeliveryCosts[];
+  @OneToMany(() => DeliveryCosts, (deliveryCosts) => deliveryCosts.Country)
+  DeliveryCosts: DeliveryCosts[];
 }
