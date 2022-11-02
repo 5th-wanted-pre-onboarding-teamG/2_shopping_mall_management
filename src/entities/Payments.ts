@@ -23,6 +23,12 @@ export class Payments {
   @Column(() => DateColumns, { prefix: false })
   dateColumns: DateColumns;
 
-  @ManyToOne(() => Orders, (orders) => orders.payments)
-  order: Orders;
+  @Column('int', { primary: true, name: 'OrderId' })
+  OrderId: number;
+
+  @ManyToOne(() => Orders, (orders) => orders.Payments, {
+    onDelete: 'SET NULL',
+    onUpdate: 'CASCADE',
+  })
+  Order: Orders;
 }

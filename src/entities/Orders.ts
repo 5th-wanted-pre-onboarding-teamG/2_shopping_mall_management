@@ -64,6 +64,6 @@ export class Orders {
   @OneToMany(() => UserCoupons, (userCoupons) => userCoupons.Order)
   UserCoupons: UserCoupons[];
 
-  @OneToMany(() => Payments, (payments) => payments.order)
-  payments: Payments[];
+  @OneToMany(() => Payments, (payments) => payments.Order)
+  Payments: Payments[];
 }
