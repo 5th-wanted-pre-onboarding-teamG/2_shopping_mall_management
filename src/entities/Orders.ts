@@ -1,4 +1,4 @@
-import { Column, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 import { DateColumns } from './embeddeds/dateColumns';
 import { OrderState } from './enums/orderState';
 import { Address } from './embeddeds/address';
@@ -31,11 +31,18 @@ export class Orders {
   @Column(() => DateColumns, { prefix: false })
   dateColumns: DateColumns;
 
+  @Column('int', { primary: true, name: 'DeliveryCostId' })
+  DeliveryCostId: number;
+
   @ManyToOne(() => Users, (users) => users.orders)
   user: Users;
 
-  @ManyToOne(() => DeliveryCosts, (deliveryCosts) => deliveryCosts.orders)
-  deliveryCost: DeliveryCosts;
+  @ManyToOne(() => DeliveryCosts, (deliveryCosts) => deliveryCosts.Orders, {
+    onDelete: 'SET NULL',
+    onUpdate: 'CASCADE',
+  })
+  @JoinColumn([{ name: 'DeliveryCostId', referencedColumnName: 'deliveryCostId' }])
+  DeliveryCost: DeliveryCosts;
 
   @ManyToOne(() => Products, (products) => products.orders)
   product: Products;

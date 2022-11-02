@@ -23,6 +23,6 @@ export class DeliveryCosts {
   @JoinColumn([{ name: 'CountryId', referencedColumnName: 'countryId' }])
   Country: Countries;
 
-  @OneToMany(() => Orders, (orders) => orders.deliveryCost)
-  orders: Orders[];
+  @OneToMany(() => Orders, (orders) => orders.DeliveryCost)
+  Orders: Orders[];
 }
