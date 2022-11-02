@@ -40,7 +40,6 @@ export class PaymentsService {
   async createPayment(createPaymentDto: CreatePaymentDto, user: Users) {
     await wrapTransaction(this.dataSource, async (entityManager: EntityManager) => {
       const orderId = createPaymentDto.orderId;
-      // const existsOrder: { quantity: number; productPrice: number; deliveryPrice: number; countryCode: string } =
       const existsOrder = await entityManager
         .getRepository(Orders)
         .createQueryBuilder('orders')
