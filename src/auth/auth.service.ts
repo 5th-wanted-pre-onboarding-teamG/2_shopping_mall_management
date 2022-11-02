@@ -37,7 +37,6 @@ export class AuthService {
     return this.usersRepository.save({
       ...createUserDto,
       password: hashedPassword,
-      age: +createUserDto.age,
     });
   }
 }
