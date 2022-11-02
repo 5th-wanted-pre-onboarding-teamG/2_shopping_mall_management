@@ -8,13 +8,13 @@ export class Coupons {
   @PrimaryGeneratedColumn({ type: 'int', name: 'couponId' })
   couponId: number;
 
-  @Column()
+  @Column({ comment: '쿠폰 이름' })
   name: string;
 
   /**
    * 쿠폰 타입
    */
-  @Column({ type: 'enum', name: 'couponType', enum: CouponType })
+  @Column({ type: 'enum', name: 'couponType', enum: CouponType, comment: '쿠폰타입' })
   couponType: CouponType;
 
   /**
@@ -22,13 +22,13 @@ export class Coupons {
    * 퍼센트할인(%): 최소값 1% ~ 최댓값 100%
    * 정액제(₩): 최소값 1000원
    */
-  @Column()
+  @Column({ comment: '할인 가격(배송비, 퍼센트할인: % / 정액제: ₩)' })
   discountedPrice: number;
 
   /**
    * 유효기간
    */
-  @Column()
+  @Column({ comment: '쿠폰 유효기간: 하루(일) 단위' })
   validPeriod: number;
 
   /**
