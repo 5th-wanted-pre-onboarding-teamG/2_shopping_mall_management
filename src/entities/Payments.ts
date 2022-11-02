@@ -5,7 +5,7 @@ import { Orders } from './Orders';
 
 @Entity({ schema: 'product_shopping', name: 'payments' })
 export class Payments {
-  @PrimaryGeneratedColumn()
+  @PrimaryGeneratedColumn({ type: 'int', name: 'paymentId' })
   paymentId: number;
 
   @Column({ type: 'enum', name: 'paymentState', enum: PaymentState })
