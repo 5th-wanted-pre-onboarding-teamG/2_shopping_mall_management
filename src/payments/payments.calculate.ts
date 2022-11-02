@@ -24,14 +24,14 @@ export const calculatePaymentPrice = (
  * @param totalProductPrice 상품 총 금액
  * @param deliveryPrice 배송비
  * @param couponType 쿠폰 타입
- * @param couponSalePrice 쿠폰 할인 금액/퍼센트
+ * @param discountedPrice 쿠폰 할인 금액/퍼센트
  * @param countryCode 국가 코드
  */
 export const calculateSalePrice = (
   totalProductPrice: number = 0,
   deliveryPrice: number = 0,
   couponType: CouponType,
-  couponSalePrice: number = 0,
+  discountedPrice: number = 0,
   countryCode: string,
 ) => {
   if (!couponType) return 0;
@@ -39,11 +39,11 @@ export const calculateSalePrice = (
   let salePrice = 0;
 
   if (isDeliveryCouponType(couponType)) {
-    salePrice = calculateDeliverySalePrice(deliveryPrice, couponSalePrice);
+    salePrice = calculateDeliverySalePrice(deliveryPrice, discountedPrice);
   } else if (isPercentCouponType(couponType)) {
-    salePrice = calculatePercentSalePrice(totalProductPrice, couponSalePrice);
+    salePrice = calculatePercentSalePrice(totalProductPrice, discountedPrice);
   } else if (isFlatRateCouponType(couponType)) {
-    salePrice = couponSalePrice;
+    salePrice = discountedPrice;
   } else {
     throw new NotFoundException('등록되지 않은 쿠폰 타입입니다.');
   }
