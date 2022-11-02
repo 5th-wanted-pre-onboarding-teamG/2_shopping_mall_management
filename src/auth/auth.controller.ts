@@ -11,7 +11,6 @@ export class AuthController {
    * @url POST '/api/auth/signUp'
    * @description 회원가입을 통해 사용자 정보를 저장합니다.
    */
-  @UseGuards(AuthLocalGuard)
   @Post('signUp')
   async signUp(@Body() createUserDto: CreateUserDto, @Res() res): Promise<void> {
     await this.authService.signUp(createUserDto);
