@@ -1,4 +1,4 @@
-import { Controller, UseGuards, Post, Body, Get, Param } from '@nestjs/common';
+import { Controller, UseGuards, Post, Body, Get, Param, Delete, ParseIntPipe } from '@nestjs/common';
 import { ProductsService } from './products.service';
 import { AuthenticatedGuard } from 'src/auth/auth.guard';
 import { CreateProductDto } from './dto/create-product.dto';
@@ -39,5 +39,14 @@ export class ProductsController {
   @Get(':productId')
   async getProduct(@Param('productId') productId: number, @User() user: Users): Promise<Products> {
     return await this.productsServics.getProduct(productId);
+  }
+  /**
+   * @url DELETE 'api/products/:productId'
+   * @returns 특정 상품 아이디의 상품 삭제
+   */
+  @UseGuards(AuthenticatedGuard)
+  @Delete(':productId')
+  async deleteProduct(@Param('productId', ParseIntPipe) productId: number, @User() user: Users) {
+    await this.productsServics.deleteProduct(productId, user);
   }
 }

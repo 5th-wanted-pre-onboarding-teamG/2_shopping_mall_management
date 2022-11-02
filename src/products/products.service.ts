@@ -1,7 +1,7 @@
-import { Injectable, ForbiddenException } from '@nestjs/common';
+import { Injectable, ForbiddenException, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Products } from 'src/entities/Products';
-import { Repository } from 'typeorm';
+import { Repository, DeleteResult } from 'typeorm';
 import { CreateProductDto } from './dto/create-product.dto';
 import { Users } from 'src/entities/Users';
 import { UserRank } from 'src/entities/enums/userRank';
@@ -41,5 +41,18 @@ export class ProductsService {
     return await this.porductsRepository.findOne({
       where: { productId },
     });
+  }
+  async deleteProduct(productId: number, user: Users): Promise<DeleteResult> {
+    const result = await this.porductsRepository
+      .createQueryBuilder('products')
+      .leftJoin('products.Author', 'users')
+      .where('products.productId =:productId', { productId })
+      .andWhere('products.Author =:userId', { userId: user.userId })
+      .getOne();
+
+    if (!result) {
+      throw new NotFoundException('상품을 찾을 수 없습니다.');
+    }
+    return this.porductsRepository.softDelete(productId);
   }
 }
