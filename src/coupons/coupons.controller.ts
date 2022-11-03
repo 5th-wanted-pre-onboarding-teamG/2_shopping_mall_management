@@ -1,10 +1,11 @@
-import { Body, Controller, Get, Param, ParseBoolPipe, ParseIntPipe, Post, Query, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Param, ParseArrayPipe, ParseIntPipe, Post, Query, UseGuards } from '@nestjs/common';
 import { User } from 'src/auth/auth.decorator';
 import { Users } from 'src/entities/Users';
 import { AuthenticatedGuard, OperateGuard } from '../auth/auth.guard';
 import { CouponsService } from './coupons.service';
 import { CreateCouponDto } from './dto/create-coupon.dto';
 import { CreateOwnedCouponDto } from './dto/create-owned-coupon.dto';
+import { GetUserOwnedCouponsRes } from './dto/get-user-owned-coupons-res.dto';
 
 @Controller('coupons')
 export class CouponsController {
@@ -64,9 +65,11 @@ export class CouponsController {
    * @url [POST] /api/coupons/owned-coupons
    * @description 사용자 쿠폰 등록 : 등록하면 사용자의 보유쿠폰 목록에 추가됩니다.
    * @Request
-   *  @param
-   * @Response
+   *  @body couponId
+   * @Response OwnedCoupons[]: 유저가 갖고있는 사용가능한 보유쿠폰들
+   *           사용가능한 쿠폰들이란, '유효기간이 없거나 만료되지 않고', '사용하지 않은 쿠폰' 입니다.
    * @success 201
+   * @errorCode 400 401 404 500
    */
   @UseGuards(AuthenticatedGuard)
   @Post('owned-coupons')
@@ -77,5 +80,19 @@ export class CouponsController {
   /**
    * @url [GET] /api/coupons/owned-coupons
    * @description 사용자 보유쿠폰 조회
+   *              쿠폰타입에 해당하는 쿠폰들 검색
+   *              유효기간이 만료되지 않고, 사용 가능한 쿠폰들만 존재합니다.
+   * @Request
+   * @Response OwnedCoupons[]
+   * @success 200
+   * @errorCode 400
    */
+  @UseGuards(AuthenticatedGuard)
+  @Get('owned-coupons')
+  async getUserOwnedCoupon(
+    @User() user: Users,
+    @Query('couponTypes') couponTypes?: string,
+  ): Promise<GetUserOwnedCouponsRes[]> {
+    return await this.couponsService.getUserOwnedCoupons(user, couponTypes);
+  }
 }

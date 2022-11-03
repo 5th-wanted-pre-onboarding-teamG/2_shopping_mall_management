@@ -16,6 +16,7 @@ import { CreateCouponDto } from './dto/create-coupon.dto';
 import { isBoolean, IsBoolean, isEnum, IsEnum, isString } from 'class-validator';
 import { CreateOwnedCouponDto } from './dto/create-owned-coupon.dto';
 import * as moment from 'moment-timezone';
+import { GetUserOwnedCouponsRes } from './dto/get-user-owned-coupons-res.dto';
 
 @Injectable()
 export class CouponsService {
@@ -75,8 +76,10 @@ export class CouponsService {
   }
 
   private checkCouponType(couponType: string) {
-    if (couponType && !isEnum(couponType, CouponType)) {
-      throw new BadRequestException('쿠폰종류가 올바르지 않습니다.');
+    if (couponType) {
+      if (!isEnum(couponType, CouponType)) {
+        throw new BadRequestException('쿠폰종류가 올바르지 않습니다.');
+      }
     }
   }
 
@@ -179,5 +182,41 @@ export class CouponsService {
       await queryRunner.rollbackTransaction();
       throw error;
     }
+  }
+
+  async getUserOwnedCoupons(user: Users, couponTypes?: string): Promise<GetUserOwnedCouponsRes[]> {
+    const sql = this.userOwnCouponsRepository
+      .createQueryBuilder('ownedCoupons')
+      .innerJoin('ownedCoupons.Coupon', 'coupons')
+      .select([
+        'ownedCoupons.ownedCouponId AS ownedCouponId',
+        'ownedCoupons.issuedDate AS issuedDate',
+        'ownedCoupons.isExtendDate  AS isExtendDate',
+        'ownedCoupons.UserId AS userId',
+        'coupons.couponId AS couponId',
+        'coupons.name AS name',
+        'coupons.couponType AS couponType',
+        'coupons.discount AS discount',
+        'coupons.validPeriod AS validPeriod',
+        'ownedCoupons.usedDate AS usedDate',
+        'ownedCoupons.expirationDate AS expirationDate',
+        'ownedCoupons.OrderId AS orderId',
+      ])
+      .where('UserId = :userId', { userId: user.userId })
+      .andWhere('usedDate IS NULL') // 아직 사용 안한 쿠폰
+      .andWhere('( expirationDate IS NULL OR expirationDate > NOW() )'); // 유효기간이 없거나, 유효기간이 만료되지 않거나
+
+    if (couponTypes) {
+      const _couponTypes = couponTypes.split(',');
+      const couponTypeList = _couponTypes.map((ct) => {
+        const couponType = ct.trim();
+        this.checkCouponType(couponType);
+        return couponType;
+      });
+
+      sql.andWhere('coupons.couponType IN (:couponTypes)', { couponTypes: couponTypeList });
+    }
+    const couponList = await sql.getRawMany();
+    return couponList;
   }
 }
