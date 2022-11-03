@@ -89,7 +89,7 @@ export class CouponsController {
    */
   @UseGuards(AuthenticatedGuard)
   @Get('owned-coupons')
-  async getUserOwnedCoupon(
+  async getUserOwnedCoupons(
     @User() user: Users,
     @Query('couponTypes') couponTypes?: string,
   ): Promise<GetUserOwnedCouponsRes[]> {
@@ -102,12 +102,24 @@ export class CouponsController {
    *              만료기간(expiration) = "연장요청시작시간 + 14일" 로 변경됩니다.
    *              연장여부(isExtendDate) = true 로 변경합니다.
    * @param ownedCouponId
-   * @success
-   * @errorCode 400
+   * @success 200
+   * @errorCode 400, 404
    */
   @UseGuards(AuthenticatedGuard)
   @Patch('owned-coupons/:ownedCouponId/extend')
   async extendExpirationDate(@User() user: Users, @Param('ownedCouponId', ParseIntPipe) ownedCouponId: number) {
     return await this.couponsService.extendExpirationDate(user, ownedCouponId);
+  }
+
+  /**
+   * @url [PATCH] /api/coupons/owned-coupons/:ownedCouponId
+   * @description 사용자가 보유한 쿠폰 한개를 사용
+   *              사용이 완료되면, usedDate = YYYY-MM-DD HH:mm:ss 형태의 타임스탬프로 변경됩니다.
+   * @param ownedCouponId
+   */
+  @UseGuards(AuthenticatedGuard)
+  @Patch('owned-coupons/:ownedCouponId')
+  async useOwnedCoupon(@User() user: Users, @Param('ownedCouponId', ParseIntPipe) ownedCouponId: number) {
+    return await this.couponsService.useOwnedCoupon(user, ownedCouponId);
   }
 }

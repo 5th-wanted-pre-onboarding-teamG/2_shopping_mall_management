@@ -220,19 +220,8 @@ export class CouponsService {
     await queryRunner.connect();
     await queryRunner.startTransaction();
     try {
-      // 1. 연장했는지 확인 & 만료되었는지 확인 & 이미사용했는지 확인
-      const coupon = await this.userOwnCouponsRepository
-        .createQueryBuilder('ownedCoupons')
-        .where('UserId = :userId', { userId: user.userId })
-        .andWhere('isExtendDate = 0')
-        .andWhere('usedDate IS NULL')
-        .andWhere('ownedCouponId = :ownedCouponId', { ownedCouponId: ownedCouponId })
-        .andWhere('expirationDate > NOW()')
-        .getOne();
-
-      if (!coupon) {
-        throw new NotFoundException('사용가능한 쿠폰이 없습니다.');
-      }
+      // 1. 연장이 가능한 쿠폰인지 확인
+      const coupon = await this.checkAvailableCoupon(user, ownedCouponId);
 
       // 2. expirationDate = 연장요청시작일 + COUPON_EXTEND_DEFAULT_DAY 로 변경
       // 3. isExtendDate = true 로 변경
@@ -250,5 +239,45 @@ export class CouponsService {
       await queryRunner.rollbackTransaction();
       throw error;
     }
+  }
+
+  async useOwnedCoupon(user: Users, ownedCouponId: number) {
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+    try {
+      // 1. 사용이 가능한 쿠폰인지 확인
+      const coupon = await this.checkAvailableCoupon(user, ownedCouponId);
+
+      // 2. usedDate 값 변경
+      await queryRunner.manager.update(
+        OwnedCoupons,
+        { ownedCouponId: ownedCouponId, UserId: user.userId, CouponId: coupon.CouponId },
+        {
+          usedDate: moment().format(this.DATE_FORMAT),
+        },
+      );
+      await queryRunner.commitTransaction();
+    } catch (error) {
+      await queryRunner.rollbackTransaction();
+      throw error;
+    }
+  }
+
+  private async checkAvailableCoupon(user: Users, ownedCouponId: number) {
+    const coupon = await this.userOwnCouponsRepository
+      .createQueryBuilder('ownedCoupons')
+      .where('UserId = :userId', { userId: user.userId })
+      .andWhere('ownedCouponId = :ownedCouponId', { ownedCouponId: ownedCouponId })
+      .andWhere('isExtendDate = 0') // 아직 연장 안됐는지 확인
+      .andWhere('usedDate IS NULL') // 아직 사용 안한 상태인지 확인
+      .andWhere('expirationDate > NOW()') // 유효기간이 아직 남았는지 확인
+      .getOne();
+
+    if (!coupon) {
+      throw new NotFoundException('사용가능한 쿠폰이 없습니다.');
+    }
+
+    return coupon;
   }
 }
