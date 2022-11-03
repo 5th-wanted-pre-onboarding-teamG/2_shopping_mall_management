@@ -849,7 +849,7 @@ export const countriesData = [
     countryId: 142,
     countryCode: 'AN',
     dCode: '+599',
-    name: 'Antiless(Netherlands)',
+    name: 'Antiless Netherlands',
   },
   {
     countryId: 143,
