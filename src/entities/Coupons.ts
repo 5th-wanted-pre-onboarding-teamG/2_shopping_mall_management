@@ -23,7 +23,7 @@ export class Coupons {
    * 정액제(₩): 최소값 1000원
    */
   @Column({ comment: '할인 가격(배송비, 퍼센트할인: % / 정액제: ₩)' })
-  discountedPrice: number;
+  discount: number;
 
   /**
    * 유효기간

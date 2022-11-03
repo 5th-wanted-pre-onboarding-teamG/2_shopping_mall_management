@@ -27,43 +27,43 @@ export class CouponsService {
     this.checkManagerUser(user);
 
     const _couponType = createCouponDto.couponType;
-    const _discountedPrice = createCouponDto.discountedPrice;
+    const _discount = createCouponDto.discount;
 
-    // 쿠폰타입에 따라 discountedPrice 조정
-    const discountedPrice = this.defineDiscountedPriceByCouponType(_couponType, _discountedPrice);
-    createCouponDto.discountedPrice = discountedPrice;
+    // 쿠폰타입에 따라 discount 조정
+    const discount = this.defineDiscountByCouponType(_couponType, _discount);
+    createCouponDto.discount = discount;
 
     // 쿠폰등록
     return await this.couponsRepository.save(createCouponDto);
   }
 
-  private defineDiscountedPriceByCouponType(couponType: string, discountedPrice: number) {
+  private defineDiscountByCouponType(couponType: string, discount: number) {
     switch (couponType) {
       case CouponType.PERCENT: {
-        if (discountedPrice > 0 && discountedPrice <= 100) {
-          return discountedPrice;
+        if (discount > 0 && discount <= 100) {
+          return discount;
         }
         throw new BadRequestException('퍼센트(%) 단위 할인 가격은 1 이상 100 이하의 값만 허용합니다.');
       }
       case CouponType.DELIVERY: {
-        if (!discountedPrice) {
+        if (!discount) {
           return this.DEFAULT_DELIVERY_COUPON_PRICE;
         }
 
-        if (discountedPrice > 0 && discountedPrice < 100) {
-          return discountedPrice;
+        if (discount > 0 && discount < 100) {
+          return discount;
         }
         throw new BadRequestException('퍼센트(%) 단위 할인 가격은 1 이상 100 이하의 값만 허용합니다.');
       }
       case CouponType.FLAT_RATE: {
-        if (!discountedPrice) {
+        if (!discount) {
           return this.DEFAULT_FLAT_RATE_COUPON_PRICE;
         }
 
-        if (discountedPrice < this.DEFAULT_FLAT_RATE_COUPON_PRICE) {
+        if (discount < this.DEFAULT_FLAT_RATE_COUPON_PRICE) {
           throw new BadRequestException('정액(원: ₩) 단위 할인가격은 최소 1000원 이상 입니다.');
         }
-        return discountedPrice;
+        return discount;
       }
     }
   }
