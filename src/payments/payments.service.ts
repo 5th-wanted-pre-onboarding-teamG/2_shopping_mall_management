@@ -76,15 +76,15 @@ export class PaymentsService {
       const productPrice = existsOrder.Product?.price;
       const deliveryPrice = existsOrder.DeliveryCost?.price;
       const countryCode = existsOrder.DeliveryCost?.Country?.countryCode;
-      const { couponType, salePrice } = ownedCoupons.Coupon;
+      const { couponType, discount } = ownedCoupons.Coupon;
       const totalProductPrice = productPrice * quantity;
-      let paymentSalePrice = calculateSalePrice(totalProductPrice, deliveryPrice, couponType, salePrice, countryCode);
-      let paymentPrice = calculatePaymentPrice(totalProductPrice, deliveryPrice, paymentSalePrice, countryCode);
+      const paymentSalePrice = calculateSalePrice(totalProductPrice, deliveryPrice, couponType, discount, countryCode);
+      const paymentPrice = calculatePaymentPrice(totalProductPrice, deliveryPrice, paymentSalePrice, countryCode);
 
       // 결제 정보 등록
       await entityManager.getRepository(Payments).insert({
         paymentState: PaymentState.COMPLETE,
-        salePrice: paymentSalePrice,
+        discountedPrice: paymentSalePrice,
         paymentPrice,
         Order: existsOrder,
         User: user,
