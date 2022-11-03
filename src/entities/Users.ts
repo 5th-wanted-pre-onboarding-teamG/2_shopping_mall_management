@@ -39,7 +39,7 @@ export class Users {
 
   @OneToMany(() => Orders, (orders) => orders.User)
   Orders: Orders[];
-  
+
   @OneToMany(() => Payments, (payments) => payments.User)
   Payments: Payments[];
 
