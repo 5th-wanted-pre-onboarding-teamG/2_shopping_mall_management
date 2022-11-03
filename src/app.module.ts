@@ -8,6 +8,7 @@ import { MySqlConfigService } from './config/database/config.service';
 import { ConfigModule } from '@nestjs/config';
 import { AuthModule } from './auth/auth.module';
 import { CouponsModule } from './coupons/coupons.module';
+import { PaymentsModule } from './payments/payments.module';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { CouponsModule } from './coupons/coupons.module';
     }),
     AuthModule,
     CouponsModule,
+    PaymentsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
