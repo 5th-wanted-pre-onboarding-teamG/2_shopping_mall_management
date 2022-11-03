@@ -1,9 +1,8 @@
-import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Countries } from 'src/entities/Countries';
-import { UserRank } from 'src/entities/enums/userRank';
 import { Users } from 'src/entities/Users';
-import { Like, NotBrackets, Repository } from 'typeorm';
+import { Like, Repository } from 'typeorm';
 import { CreateCountriesDto } from './dto/create-countries.dto';
 import { UpdateCountriesDto } from './dto/update-countries.dto';
 
@@ -20,12 +19,7 @@ export class CountriesService {
    * @description 새로운 국정정보를 생성합니다
    * @returns 국적정보 생성 결과
    */
-  async createCountries(user: Users, createCountriesDto: CreateCountriesDto) {
-    // 관리자가 아니라면 403 응답
-    if (user.rank !== UserRank.MANAGER) {
-      throw new ForbiddenException();
-    }
-
+  async createCountries(createCountriesDto: CreateCountriesDto) {
     const { name, countryCode } = createCountriesDto;
     const isMatched = /\+\d+/.test(countryCode);
 
@@ -50,12 +44,7 @@ export class CountriesService {
    * @description 국적정보를 검색합니다
    * @returns 국적정보 검색 결과
    */
-  async searchCountries(user: Users, originalUrl: string) {
-    // 관리자가 아니라면 403 응답
-    if (user.rank !== UserRank.MANAGER) {
-      throw new ForbiddenException();
-    }
-
+  async searchCountries(originalUrl: string) {
     // 들어온 키워드가 국적번호 형식인지 확인
     const isDcode = originalUrl.match(/\+\d+/)?.[0];
 
@@ -80,12 +69,7 @@ export class CountriesService {
    * @description 국적정보를 수정합니다
    * @returns 국적정보 수정 결과
    */
-  async updateCountriesById(countryId: Countries['countryId'], updateCountriesDto: UpdateCountriesDto, user: Users) {
-    // 관리자가 아니라면 403 응답
-    if (user.rank !== UserRank.MANAGER) {
-      throw new ForbiddenException();
-    }
-
+  async updateCountriesById(countryId: Countries['countryId'], updateCountriesDto: UpdateCountriesDto) {
     const isExist = await this.countriesRepository.countBy({ countryId });
     const isDuplicatedName = await this.countriesRepository
       .createQueryBuilder('countries')
@@ -109,12 +93,7 @@ export class CountriesService {
    * @description 국적정보를 삭제합니다
    * @returns 국적정보 삭제 결과
    */
-  async deleteCountreisById(countryId: Countries['countryId'], user: Users): Promise<void> {
-    // 관리자가 아니라면 403 응답
-    if (user.rank !== UserRank.MANAGER) {
-      throw new ForbiddenException();
-    }
-
+  async deleteCountreisById(countryId: Countries['countryId']): Promise<void> {
     const isAffected = await this.countriesRepository.delete(countryId);
 
     // 삭제된 국적이 없는 경우 404 응답

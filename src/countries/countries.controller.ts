@@ -1,9 +1,7 @@
 import { Body, Controller, Delete, Get, Param, ParseIntPipe, Post, Put, Req, UseGuards } from '@nestjs/common';
 import { Request } from 'express';
-import { User } from 'src/auth/auth.decorator';
-import { AuthenticatedGuard } from 'src/auth/auth.guard';
+import { OperateGuard } from 'src/auth/auth.guard';
 import { Countries } from 'src/entities/Countries';
-import { Users } from 'src/entities/Users';
 import { CountriesService } from './countries.service';
 import { CreateCountriesDto } from './dto/create-countries.dto';
 import { UpdateCountriesDto } from './dto/update-countries.dto';
@@ -18,10 +16,10 @@ export class CountriesController {
    * @description 새로운 국정정보를 생성합니다
    * @returns 국적정보 생성 결과
    */
-  @UseGuards(AuthenticatedGuard)
+  @UseGuards(OperateGuard)
   @Post()
-  async createCountries(@Body() createCountriesDto: CreateCountriesDto, @User() user: Users) {
-    return await this.countriesService.createCountries(user, createCountriesDto);
+  async createCountries(@Body() createCountriesDto: CreateCountriesDto) {
+    return await this.countriesService.createCountries(createCountriesDto);
   }
 
   /**
@@ -30,10 +28,10 @@ export class CountriesController {
    * @description 국적정보를 검색합니다
    * @returns 국적정보 검색 결과
    */
-  @UseGuards(AuthenticatedGuard)
+  @UseGuards(OperateGuard)
   @Get()
-  async searchCountries(@Req() req: Request, @User() user: Users) {
-    return await this.countriesService.searchCountries(user, req.originalUrl);
+  async searchCountries(@Req() req: Request) {
+    return await this.countriesService.searchCountries(req.originalUrl);
   }
 
   /**
@@ -43,14 +41,13 @@ export class CountriesController {
    * @description 국적정보를 수정합니다
    * @returns 국적정보 수정 결과
    */
-  @UseGuards(AuthenticatedGuard)
+  @UseGuards(OperateGuard)
   @Put(':countryId')
   async updateCountriesById(
     @Param('countryId', ParseIntPipe) countryId: Countries['countryId'],
     @Body() updateCountriesDto: UpdateCountriesDto,
-    @User() user: Users,
   ) {
-    return await this.countriesService.updateCountriesById(countryId, updateCountriesDto, user);
+    return await this.countriesService.updateCountriesById(countryId, updateCountriesDto);
   }
 
   /**
@@ -59,9 +56,9 @@ export class CountriesController {
    * @description 국적정보를 삭제합니다
    * @returns 국적정보 삭제 결과
    */
-  @UseGuards(AuthenticatedGuard)
+  @UseGuards(OperateGuard)
   @Delete(':countryId')
-  async deleteCountreisById(@Param('countryId', ParseIntPipe) countryId: Countries['countryId'], @User() user: Users) {
-    return await this.countriesService.deleteCountreisById(countryId, user);
+  async deleteCountreisById(@Param('countryId', ParseIntPipe) countryId: Countries['countryId']) {
+    return await this.countriesService.deleteCountreisById(countryId);
   }
 }
