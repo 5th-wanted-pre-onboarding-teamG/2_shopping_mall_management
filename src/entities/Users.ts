@@ -4,6 +4,7 @@ import { OwnedCoupons } from './OwnedCoupons';
 import { Orders } from './Orders';
 import { UserRank } from './enums/userRank';
 import { Payments } from './Payments';
+import { Products } from './Products';
 
 @Entity({ schema: 'product_shopping', name: 'users' })
 export class Users {
@@ -38,7 +39,10 @@ export class Users {
 
   @OneToMany(() => Orders, (orders) => orders.User)
   Orders: Orders[];
-
+  
   @OneToMany(() => Payments, (payments) => payments.User)
   Payments: Payments[];
+  
+  @OneToMany(() => Products, (products) => products.Author)
+  products: Products[];
 }
