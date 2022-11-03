@@ -9,6 +9,8 @@ import { ConfigModule } from '@nestjs/config';
 import { AuthModule } from './auth/auth.module';
 import { CouponsModule } from './coupons/coupons.module';
 import { PaymentsModule } from './payments/payments.module';
+import { ProductsModule } from './products/products.module';
+import { CountriesModule } from './countries/countries.module';
 
 @Module({
   imports: [
@@ -20,6 +22,8 @@ import { PaymentsModule } from './payments/payments.module';
     AuthModule,
     CouponsModule,
     PaymentsModule,
+    ProductsModule,
+    CountriesModule,
   ],
   controllers: [AppController],
   providers: [AppService],
