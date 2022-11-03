@@ -1,7 +1,7 @@
 import { Body, Controller, Get, Param, ParseBoolPipe, ParseIntPipe, Post, Query, UseGuards } from '@nestjs/common';
 import { User } from 'src/auth/auth.decorator';
 import { Users } from 'src/entities/Users';
-import { AuthenticatedGuard } from '../auth/auth.guard';
+import { OperateGuard } from '../auth/auth.guard';
 import { CouponsService } from './coupons.service';
 import { CreateCouponDto } from './dto/create-coupon.dto';
 
@@ -17,7 +17,7 @@ export class CouponsController {
    * @successCode: 201
    * @errorCode: 400, 401, 500
    */
-  @UseGuards(AuthenticatedGuard)
+  @UseGuards(OperateGuard)
   @Post('')
   async createCoupons(@User() user: Users, @Body() createCouponDto: CreateCouponDto) {
     return await this.couponsService.createCoupon(user, createCouponDto);
@@ -32,7 +32,7 @@ export class CouponsController {
    * @successCode: 200
    * @errorCode: 400, 401, 500
    */
-  @UseGuards(AuthenticatedGuard)
+  @UseGuards(OperateGuard)
   @Get()
   async getAllCoupons(@User() user: Users, @Query('couponType') couponType?: string) {
     return this.couponsService.getAllCoupons(user, couponType);
@@ -48,7 +48,7 @@ export class CouponsController {
    * @success 200
    * @errorCode 400, 401, 404
    */
-  @UseGuards(AuthenticatedGuard)
+  @UseGuards(OperateGuard)
   @Get('/users/:userId/owned-coupons')
   async getOwnedCoupons(
     @Param('userId', ParseIntPipe) userId: number,

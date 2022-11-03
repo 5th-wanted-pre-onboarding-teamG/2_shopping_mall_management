@@ -24,8 +24,6 @@ export class CouponsService {
   private readonly COUPON_TYPE_DEFAULT_SEARCH_FILTER = [CouponType.PERCENT, CouponType.DELIVERY, CouponType.FLAT_RATE]; // 쿠폰타입검색 기본값
 
   async createCoupon(user: Users, createCouponDto: CreateCouponDto) {
-    this.checkManagerUser(user);
-
     const _couponType = createCouponDto.couponType;
     const _discount = createCouponDto.discount;
 
@@ -68,12 +66,6 @@ export class CouponsService {
     }
   }
 
-  private checkManagerUser(user: Users) {
-    if (user.rank !== UserRank.MANAGER) {
-      throw new UnauthorizedException('접근권한이 없습니다.');
-    }
-  }
-
   private checkCouponType(couponType: string) {
     if (couponType && !isEnum(couponType, CouponType)) {
       throw new BadRequestException('쿠폰종류가 올바르지 않습니다.');
@@ -81,8 +73,6 @@ export class CouponsService {
   }
 
   async getAllCoupons(user: Users, couponType: string) {
-    this.checkManagerUser(user);
-
     this.checkCouponType(couponType);
 
     let _couponTypes;
@@ -102,7 +92,6 @@ export class CouponsService {
   }
 
   async getOwnedCoupons(user: Users, _userId: number, _couponType?: any, isUsed?: any) {
-    this.checkManagerUser(user);
     if (isUsed && !isBoolean(isUsed)) {
       throw new BadRequestException('잘못된 검색 조건입니다.');
     }
