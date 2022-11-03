@@ -175,4 +175,12 @@ export class OrdersService {
     }
   }
 
+  async isValidOrderRequest(userId: number, orderId: number) {
+    const { UserId } = await this.ordersRepository.findOne({ where: { orderId } });
+    if (UserId === userId) {
+      return true;
+    } else {
+      return false;
+    }
+  }
 }
