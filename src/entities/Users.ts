@@ -15,7 +15,7 @@ export class Users {
   @Column({ type: 'text', name: 'password' })
   password: string;
 
-  @Column({ type: 'varchar', name: 'name', length: 20 })
+  @Column({ type: 'varchar', name: 'name', length: 30 })
   name: string;
 
   @Column({ type: 'varchar', name: 'phone', length: 20 })
