@@ -1,8 +1,11 @@
 import { Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Post, Query, UseGuards } from '@nestjs/common';
+import { User } from 'src/auth/auth.decorator';
+import { AuthenticatedGuard, OperateGuard } from 'src/auth/auth.guard';
 import { Users } from 'src/entities/Users';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { OrdersService } from './orders.service';
 
+@UseGuards(AuthenticatedGuard)
 @Controller('orders')
 export class OrdersController {
   constructor(private readonly ordersService: OrdersService) {}
@@ -10,6 +13,11 @@ export class OrdersController {
   @Post()
   createOrder(@User() user: Users, @Body() createOrderDto: CreateOrderDto) {
     return this.ordersService.createOrder(user, createOrderDto);
+  }
+
+  @Get()
+  getMyOrders(@User() user: Users) {
+    return this.ordersService.getMyOrders(user.userId);
   }
 
 }

@@ -66,4 +66,11 @@ export class OrdersService {
     }
   }
 
+  async getMyOrders(userId: number) {
+    return await this.ordersRepository.find({
+      where: { UserId: userId },
+    });
+  }
+
 export class OrdersService {}
+}
