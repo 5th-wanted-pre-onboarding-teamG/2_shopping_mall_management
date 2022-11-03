@@ -41,10 +41,10 @@ export class CouponsController {
   /**
    * @url [GET] /api/coupons/users/:userId/owned-coupons
    * @description 운영자는 유저아이디에 해당하는 회원이 보유한 모든 쿠폰들을 조회할 수 있습니다.
-   * @Request:
+   * @Request
    * * @param required: userId
    * * @query selection: couponType, isUsed
-   * @Response: OwnedCoupons[]
+   * @Response OwnedCoupons[]
    * @success 200
    * @errorCode 400, 401, 404
    */
@@ -58,4 +58,18 @@ export class CouponsController {
   ) {
     return this.couponsService.getOwnedCoupons(user, userId, couponType, isUsed);
   }
+
+  /**
+   * @url [POST] /api/coupons/owned-coupons
+   * @description 사용자 쿠폰 등록 : 등록하면 사용자의 보유쿠폰 목록에 추가됩니다.
+   * @Request
+   *  @param
+   * @Response
+   * @success 201
+   */
+
+  /**
+   * @url [GET] /api/coupons/owned-coupons
+   * @description 사용자 보유쿠폰 조회
+   */
 }
