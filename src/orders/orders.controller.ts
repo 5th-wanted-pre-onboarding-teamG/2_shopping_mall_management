@@ -37,4 +37,8 @@ export class OrdersController {
   updateOrderState(@Param('orderId', ParseIntPipe) orderId: number, @Body('state') state: OrderState) {
     return this.ordersService.updateOrderState(orderId, state);
   }
+  @Delete(':orderId/cancel')
+  cancelOrder(@User() user: Users, @Param('orderId', ParseIntPipe) orderId: number) {
+    return this.ordersService.cancelOrder(user.userId, orderId);
+  }
 }

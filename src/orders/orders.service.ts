@@ -120,4 +120,37 @@ export class OrdersService {
     }
   }
 
+  async cancelOrder(userId: number, orderId: number) {
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+
+    if (!this.isValidOrderRequest(userId, orderId)) {
+      throw new BadRequestException('해당 유저의 주문내역이 아닙니다.');
+    }
+
+    const { quantity, ProductId: productId } = await queryRunner.manager
+      .getRepository(Orders)
+      .findOne({ where: { orderId }, select: ['quantity', 'ProductId'] });
+
+    try {
+      await Promise.all([
+        queryRunner.manager.update<Orders>(Orders, { orderId }, { orderState: OrderState.CANCLE_ORDER }),
+        queryRunner.manager
+          .createQueryBuilder()
+          .update(Products)
+          .set({ stock: () => `stock + ${quantity}` })
+          .where('productId = :productId', { productId })
+          .execute(),
+      ]);
+      await queryRunner.commitTransaction();
+      return;
+    } catch (error) {
+      await queryRunner.rollbackTransaction();
+      console.error(error);
+      throw new BadRequestException('취소 과정에서 오류가 발생했습니다');
+    } finally {
+      await queryRunner.release();
+    }
+  }
 }
