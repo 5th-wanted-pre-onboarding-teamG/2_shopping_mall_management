@@ -32,4 +32,9 @@ export class OrdersController {
     return this.ordersService.getOrdersByName(name);
   }
 
+  @UseGuards(OperateGuard)
+  @Patch(':orderId')
+  updateOrderState(@Param('orderId', ParseIntPipe) orderId: number, @Body('state') state: OrderState) {
+    return this.ordersService.updateOrderState(orderId, state);
+  }
 }

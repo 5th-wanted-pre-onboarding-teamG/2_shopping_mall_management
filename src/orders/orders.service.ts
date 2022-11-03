@@ -103,4 +103,21 @@ export class OrdersService {
     return await queryBuilder.getManyAndCount();
   }
 
+  async updateOrderState(orderId: number, orderState: OrderState) {
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+
+    try {
+      const result = await queryRunner.manager.update<Orders>(Orders, { orderId }, { orderState });
+      await queryRunner.commitTransaction();
+      return result.affected;
+    } catch (error) {
+      await queryRunner.rollbackTransaction();
+      throw new BadRequestException(error || '수정 과정에서 오류가 발생했습니다.');
+    } finally {
+      await queryRunner.release();
+    }
+  }
+
 }
