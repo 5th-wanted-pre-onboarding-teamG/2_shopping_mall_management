@@ -73,4 +73,23 @@ export class OrdersService {
   }
 
 export class OrdersService {}
+
+  async searchSpecificOrders(userId: number, startDate: Date, endDate = new Date(), state?: OrderState, page = 1) {
+    const queryBuilder = this.dataSource
+      .getRepository(Orders)
+      .createQueryBuilder('orders')
+      .where('orders.UserId = :userId', { userId })
+      .andWhere('orders.createAt >= :startDate', { startDate })
+      .andWhere('orders.deleteAt <= :endDate', { endDate })
+      .take(this.take)
+      .skip(this.take * (page - 1))
+      .orderBy('orders.createAt', 'DESC');
+
+    if (state) {
+      queryBuilder.andWhere('orders.orderState = :state', { state });
+    }
+
+    return await queryBuilder.getManyAndCount();
+  }
+
 }

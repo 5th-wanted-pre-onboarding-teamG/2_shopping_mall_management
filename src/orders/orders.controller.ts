@@ -1,6 +1,7 @@
 import { Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Post, Query, UseGuards } from '@nestjs/common';
 import { User } from 'src/auth/auth.decorator';
 import { AuthenticatedGuard, OperateGuard } from 'src/auth/auth.guard';
+import { OrderState } from 'src/entities/enums/orderState';
 import { Users } from 'src/entities/Users';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { OrdersService } from './orders.service';
@@ -18,6 +19,11 @@ export class OrdersController {
   @Get()
   getMyOrders(@User() user: Users) {
     return this.ordersService.getMyOrders(user.userId);
+  }
+
+  @Get('search')
+  searchSpecificOrders(@User() user: Users, @Query() query: { startDate: Date; endDate: Date; state?: OrderState }) {
+    return this.ordersService.searchSpecificOrders(user.userId, query.startDate, query.endDate, query.state);
   }
 
 }
