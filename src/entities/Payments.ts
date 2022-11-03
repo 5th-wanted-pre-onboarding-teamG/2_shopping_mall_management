@@ -15,7 +15,7 @@ export class Payments {
   orderPrice: number;
 
   @Column()
-  salePrice: number;
+  discountedPrice: number;
 
   @Column()
   paymentPrice: number;

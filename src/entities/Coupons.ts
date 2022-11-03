@@ -15,7 +15,7 @@ export class Coupons {
   couponType: CouponType;
 
   @Column()
-  salePrice: number;
+  discount: number;
 
   @Column()
   validPeriod: number;
