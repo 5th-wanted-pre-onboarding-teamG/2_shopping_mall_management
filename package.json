@@ -24,6 +24,10 @@
     "seed": "ts-node ./node_modules/typeorm-extension/dist/cli/index.js seed -d ./dataSource.ts"
   },
   "dependencies": {
+    "@js-joda/core": "^5.4.2",
+    "@js-joda/locale": "^4.8.6",
+    "@js-joda/locale_ko": "^4.8.6",
+    "@js-joda/timezone": "^2.15.0",
     "@nestjs/common": "^9.0.0",
     "@nestjs/config": "^2.2.0",
     "@nestjs/core": "^9.0.0",
@@ -38,6 +42,8 @@
     "dotenv": "^16.0.3",
     "express-session": "^1.17.3",
     "js-joda": "^1.11.0",
+    "moment": "^2.29.4",
+    "moment-timezone": "^0.5.38",
     "mysql2": "^2.3.3",
     "passport": "^0.6.0",
     "passport-local": "^1.0.0",
