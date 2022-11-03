@@ -54,6 +54,7 @@ export class PaymentsService {
           'countries.countryCode',
         ])
         .where('orders.orderId = :orderId', { orderId })
+        .andWhere('orders.orderState = :orderState', { orderState: OrderState.PAYMENT_WAITING })
         .getOne();
 
       if (!existsOrder) {
