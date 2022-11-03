@@ -169,7 +169,8 @@ export class CouponsService {
       const couponList = await this.userOwnCouponsRepository
         .createQueryBuilder('ownedCoupons')
         .where('UserId = :userId', { userId: user.userId })
-        .andWhere('usedDate is null') // 아직 사용 안한 쿠폰
+        .andWhere('usedDate IS NULL') // 아직 사용 안한 쿠폰
+        .andWhere('( expirationDate IS NULL OR expirationDate > NOW() )') // 유효기간이 없거나, 유효기간이 만료되지 않거나
         .getMany();
 
       return couponList;
