@@ -1,15 +1,21 @@
-import { Controller, Get, Post, Req, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, HttpStatus, Post, Req, Res, UseGuards } from '@nestjs/common';
 import { AuthenticatedGuard, AuthLocalGuard } from './auth.guard';
+import { AuthService } from './auth.service';
+import { CreateUserDto } from './dto/create-user.dto';
 
 @Controller('auth')
 export class AuthController {
+  constructor(private readonly authService: AuthService) {}
+
   /**
    * @url POST '/api/auth/signUp'
    * @description 회원가입을 통해 사용자 정보를 저장합니다.
    */
-  @UseGuards(AuthLocalGuard)
   @Post('signUp')
-  signUp(): void {}
+  async signUp(@Body() createUserDto: CreateUserDto, @Res() res): Promise<void> {
+    await this.authService.signUp(createUserDto);
+    res.status(HttpStatus.CREATED);
+  }
 
   /**
    * @url POST '/api/auth/login'
