@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, ParseArrayPipe, ParseIntPipe, Post, Query, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Param, ParseIntPipe, Patch, Post, Query, UseGuards } from '@nestjs/common';
 import { User } from 'src/auth/auth.decorator';
 import { Users } from 'src/entities/Users';
 import { AuthenticatedGuard, OperateGuard } from '../auth/auth.guard';
@@ -94,5 +94,20 @@ export class CouponsController {
     @Query('couponTypes') couponTypes?: string,
   ): Promise<GetUserOwnedCouponsRes[]> {
     return await this.couponsService.getUserOwnedCoupons(user, couponTypes);
+  }
+
+  /**
+   * @url [PATCH] /api/coupons/owned-coupons/:ownedCouponId/extend
+   * @description 사용자가 보유한 쿠폰을 딱 한번만 기간을 2주일 연장할 수 있습니다.
+   *              만료기간(expiration) = "연장요청시작시간 + 14일" 로 변경됩니다.
+   *              연장여부(isExtendDate) = true 로 변경합니다.
+   * @param ownedCouponId
+   * @success
+   * @errorCode 400
+   */
+  @UseGuards(AuthenticatedGuard)
+  @Patch('owned-coupons/:ownedCouponId/extend')
+  async extendExpirationDate(@User() user: Users, @Param('ownedCouponId', ParseIntPipe) ownedCouponId: number) {
+    return await this.couponsService.extendExpirationDate(user, ownedCouponId);
   }
 }

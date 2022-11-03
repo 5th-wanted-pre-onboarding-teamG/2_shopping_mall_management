@@ -1,11 +1,4 @@
-import {
-  BadRequestException,
-  Injectable,
-  InternalServerErrorException,
-  NotFoundException,
-  ParseBoolPipe,
-  UnauthorizedException,
-} from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Users } from 'src/entities/Users';
 import { Repository, DataSource, Not, IsNull } from 'typeorm';
@@ -13,7 +6,7 @@ import { Coupons } from '../entities/Coupons';
 import { CouponType } from 'src/entities/enums/couponType';
 import { OwnedCoupons } from '../entities/OwnedCoupons';
 import { CreateCouponDto } from './dto/create-coupon.dto';
-import { isBoolean, IsBoolean, isEnum, IsEnum, isString } from 'class-validator';
+import { isBoolean, isEnum } from 'class-validator';
 import { CreateOwnedCouponDto } from './dto/create-owned-coupon.dto';
 import * as moment from 'moment-timezone';
 import { GetUserOwnedCouponsRes } from './dto/get-user-owned-coupons-res.dto';
@@ -31,6 +24,8 @@ export class CouponsService {
   private readonly DEFAULT_DELIVERY_COUPON_PRICE = 100; // 배송쿠폰 기본값 (100 %)
   private readonly DEFAULT_FLAT_RATE_COUPON_PRICE = 1000; // 정액제 기본값 (1000 원)
   private readonly COUPON_TYPE_DEFAULT_SEARCH_FILTER = [CouponType.PERCENT, CouponType.DELIVERY, CouponType.FLAT_RATE]; // 쿠폰타입검색 기본값
+  private readonly COUPON_EXTEND_DEFAULT_DAY = 14; // 쿠폰 2주 연장
+  private readonly DATE_FORMAT = 'YYYY-MM-DD HH:mm:ss';
 
   async createCoupon(user: Users, createCouponDto: CreateCouponDto) {
     const _couponType = createCouponDto.couponType;
@@ -152,10 +147,10 @@ export class CouponsService {
 
       // 2. 쿠폰발행날짜(issuedDate): 쿠폰 등록 요청 시기로 default값 으로 세팅
       const now = moment();
-      const issuedDate = now.format('YYYY-MM-DD HH:mm:ss');
+      const issuedDate = now.format(this.DATE_FORMAT);
 
       // 3. 쿠폰만료날짜(expirationDate): null -> "쿠폰발행날짜 + 쿠폰기간" 으로 변경
-      const expirationDate = now.add(coupon.validPeriod, 'day').format('YYYY-MM-DD HH:mm:ss');
+      const expirationDate = now.add(coupon.validPeriod, 'day').format(this.DATE_FORMAT);
 
       // 4. 쿠폰(Coupon)을 ownedCoupon에 등록
       await queryRunner.manager.getRepository(OwnedCoupons).save({
@@ -218,5 +213,42 @@ export class CouponsService {
     }
     const couponList = await sql.getRawMany();
     return couponList;
+  }
+
+  async extendExpirationDate(user: Users, ownedCouponId: number) {
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+    try {
+      // 1. 연장했는지 확인 & 만료되었는지 확인 & 이미사용했는지 확인
+      const coupon = await this.userOwnCouponsRepository
+        .createQueryBuilder('ownedCoupons')
+        .where('UserId = :userId', { userId: user.userId })
+        .andWhere('isExtendDate = 0')
+        .andWhere('usedDate IS NULL')
+        .andWhere('ownedCouponId = :ownedCouponId', { ownedCouponId: ownedCouponId })
+        .andWhere('expirationDate > NOW()')
+        .getOne();
+
+      if (!coupon) {
+        throw new NotFoundException('사용가능한 쿠폰이 없습니다.');
+      }
+
+      // 2. expirationDate = 연장요청시작일 + COUPON_EXTEND_DEFAULT_DAY 로 변경
+      // 3. isExtendDate = true 로 변경
+      await queryRunner.manager.update(
+        OwnedCoupons,
+        { ownedCouponId: ownedCouponId, UserId: user.userId, CouponId: coupon.CouponId },
+        {
+          expirationDate: moment().add(this.COUPON_EXTEND_DEFAULT_DAY, 'days').format(this.DATE_FORMAT),
+          isExtendDate: true,
+        },
+      );
+
+      await queryRunner.commitTransaction();
+    } catch (error) {
+      await queryRunner.rollbackTransaction();
+      throw error;
+    }
   }
 }
