@@ -153,4 +153,26 @@ export class OrdersService {
       await queryRunner.release();
     }
   }
+
+  async deleteOrderHistory(userId: number, orderId: number) {
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+
+    if (!this.isValidOrderRequest(userId, orderId)) {
+      throw new BadRequestException('해당 유저의 주문내역이 아닙니다.');
+    }
+
+    try {
+      await queryRunner.manager.getRepository(Orders).softDelete({ orderId });
+      await queryRunner.commitTransaction();
+      return true;
+    } catch (error) {
+      await queryRunner.rollbackTransaction();
+      throw new BadRequestException('주문내역 삭제 과정에서 오류가 발생했습니다.');
+    } finally {
+      await queryRunner.release();
+    }
+  }
+
 }
