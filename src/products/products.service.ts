@@ -37,7 +37,6 @@ export class ProductsService {
   async deleteProduct(productId: number) {
     const result = await this.productsRepository
       .createQueryBuilder('products')
-      .leftJoin('products.Author', 'users')
       .where('products.productId =:productId', { productId })
       .getOne();
 
@@ -49,7 +48,6 @@ export class ProductsService {
   async updateProduct(productId: number, product: Products) {
     const result = await this.productsRepository
       .createQueryBuilder('products')
-      .leftJoin('products.Author', 'users')
       .update(Products)
       .set({
         name: product.name,
