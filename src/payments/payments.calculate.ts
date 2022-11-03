@@ -8,7 +8,12 @@ import { NotFoundException } from '@nestjs/common';
  * @param salePrice 할인 금액
  * @param countryCode 국가 코드
  */
-export const calculatePaymentPrice = (totalProductPrice = 0, deliveryPrice = 0, salePrice = 0, countryCode: string) => {
+export const calculatePaymentPrice = (
+  totalProductPrice: number,
+  deliveryPrice: number,
+  salePrice: number,
+  countryCode: string,
+) => {
   let orderPrice = totalProductPrice + deliveryPrice;
   orderPrice = correctionDollar(orderPrice, countryCode);
   return orderPrice - salePrice;
@@ -23,10 +28,10 @@ export const calculatePaymentPrice = (totalProductPrice = 0, deliveryPrice = 0, 
  * @param countryCode 국가 코드
  */
 export const calculateSalePrice = (
-  totalProductPrice = 0,
-  deliveryPrice = 0,
+  totalProductPrice: number,
+  deliveryPrice: number,
   couponType: CouponType,
-  discountedPrice = 0,
+  discountedPrice: number,
   countryCode: string,
 ) => {
   if (!couponType) return 0;
@@ -51,7 +56,7 @@ export const calculateSalePrice = (
  * @param deliveryPrice 배송비
  * @param salePercent 배송 할인 퍼센트
  */
-const calculateDeliverySalePrice = (deliveryPrice = 0, salePercent = 0) => {
+const calculateDeliverySalePrice = (deliveryPrice: number, salePercent: number) => {
   return Math.round((deliveryPrice * salePercent) / 100);
 };
 
@@ -60,7 +65,7 @@ const calculateDeliverySalePrice = (deliveryPrice = 0, salePercent = 0) => {
  * @param totalProductPrice 상품 총 금액
  * @param salePercent 상품 할인 퍼센트
  */
-const calculatePercentSalePrice = (totalProductPrice = 0, salePercent = 0) => {
+const calculatePercentSalePrice = (totalProductPrice: number, salePercent: number) => {
   return Math.round((totalProductPrice * salePercent) / 100);
 };
 
