@@ -7,6 +7,7 @@ import { MySqlConfigModule } from './config/database/config.module';
 import { MySqlConfigService } from './config/database/config.service';
 import { ConfigModule } from '@nestjs/config';
 import { AuthModule } from './auth/auth.module';
+import { PaymentsModule } from './payments/payments.module';
 import { ProductsModule } from './products/products.module';
 
 @Module({
@@ -17,6 +18,7 @@ import { ProductsModule } from './products/products.module';
       useClass: MySqlConfigService,
     }),
     AuthModule,
+    PaymentsModule,
     ProductsModule,
   ],
   controllers: [AppController],

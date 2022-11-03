@@ -2,6 +2,7 @@ import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 't
 import { PaymentState } from './enums/paymentState';
 import { DateColumns } from './embeddeds/dateColumns';
 import { Orders } from './Orders';
+import { Users } from './Users';
 
 @Entity({ schema: 'product_shopping', name: 'payments' })
 export class Payments {
@@ -32,4 +33,11 @@ export class Payments {
   })
   @JoinColumn([{ name: 'OrderId', referencedColumnName: 'orderId' }])
   Order: Orders;
+
+  @ManyToOne(() => Users, (users) => users.Payments, {
+    onDelete: 'CASCADE',
+    onUpdate: 'CASCADE',
+  })
+  @JoinColumn([{ name: 'UserId', referencedColumnName: 'userId' }])
+  User: Users;
 }
