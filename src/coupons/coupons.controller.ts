@@ -1,9 +1,10 @@
 import { Body, Controller, Get, Param, ParseBoolPipe, ParseIntPipe, Post, Query, UseGuards } from '@nestjs/common';
 import { User } from 'src/auth/auth.decorator';
 import { Users } from 'src/entities/Users';
-import { OperateGuard } from '../auth/auth.guard';
+import { AuthenticatedGuard, OperateGuard } from '../auth/auth.guard';
 import { CouponsService } from './coupons.service';
 import { CreateCouponDto } from './dto/create-coupon.dto';
+import { CreateOwnedCouponDto } from './dto/create-owned-coupon.dto';
 
 @Controller('coupons')
 export class CouponsController {
@@ -67,6 +68,11 @@ export class CouponsController {
    * @Response
    * @success 201
    */
+  @UseGuards(AuthenticatedGuard)
+  @Post('owned-coupons')
+  async createdOwnedCoupon(@User() user: Users, @Body() newCoupon: CreateOwnedCouponDto) {
+    return await this.couponsService.createOwnedCoupon(user, newCoupon);
+  }
 
   /**
    * @url [GET] /api/coupons/owned-coupons

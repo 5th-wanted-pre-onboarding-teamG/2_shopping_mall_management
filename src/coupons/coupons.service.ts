@@ -1,6 +1,12 @@
-import { BadRequestException, Injectable, ParseBoolPipe, UnauthorizedException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  InternalServerErrorException,
+  NotFoundException,
+  ParseBoolPipe,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { UserRank } from 'src/entities/enums/userRank';
 import { Users } from 'src/entities/Users';
 import { Repository, DataSource, Not, IsNull } from 'typeorm';
 import { Coupons } from '../entities/Coupons';
@@ -8,6 +14,8 @@ import { CouponType } from 'src/entities/enums/couponType';
 import { OwnedCoupons } from '../entities/OwnedCoupons';
 import { CreateCouponDto } from './dto/create-coupon.dto';
 import { isBoolean, IsBoolean, isEnum, IsEnum, isString } from 'class-validator';
+import { CreateOwnedCouponDto } from './dto/create-owned-coupon.dto';
+import * as moment from 'moment-timezone';
 
 @Injectable()
 export class CouponsService {
@@ -121,5 +129,54 @@ export class CouponsService {
         ...(_usedDate && { usedDate: _usedDate }),
       })
       .getMany();
+  }
+
+  async createOwnedCoupon(user: Users, newCoupon: CreateOwnedCouponDto) {
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+
+    try {
+      // 1. 등록할 쿠폰이 존재하는지 확인
+      const coupon = await this.couponsRepository
+        .createQueryBuilder('coupons')
+        .where('couponId = :couponId', { couponId: newCoupon.couponId })
+        .getOne();
+
+      if (!coupon) {
+        throw new NotFoundException('해당 쿠폰은 존재하지 않습니다.');
+      }
+
+      // 2. 쿠폰발행날짜(issuedDate): 쿠폰 등록 요청 시기로 default값 으로 세팅
+      const now = moment();
+      const issuedDate = now.format('YYYY-MM-DD HH:mm:ss');
+
+      // 3. 쿠폰만료날짜(expirationDate): null -> "쿠폰발행날짜 + 쿠폰기간" 으로 변경
+      const expirationDate = now.add(coupon.validPeriod, 'day').format('YYYY-MM-DD HH:mm:ss');
+
+      // 4. 쿠폰(Coupon)을 ownedCoupon에 등록
+      await queryRunner.manager.getRepository(OwnedCoupons).save({
+        issuedDate: issuedDate,
+        expirationDate: expirationDate,
+        UserId: user.userId,
+        CouponId: newCoupon.couponId,
+      });
+
+      // 데이터베이스에 저장
+      queryRunner.commitTransaction();
+
+      // 5. 새로운 쿠폰정보를 추가한 후 현재유저 보유쿠폰 리스트를 리스폰스합니다.
+      const couponList = await this.userOwnCouponsRepository
+        .createQueryBuilder('ownedCoupons')
+        .where('UserId = :userId', { userId: user.userId })
+        .andWhere('usedDate is null') // 아직 사용 안한 쿠폰
+        .getMany();
+
+      return couponList;
+    } catch (error) {
+      // 에러가 발생하면 롤백
+      await queryRunner.rollbackTransaction();
+      throw error;
+    }
   }
 }

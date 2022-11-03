@@ -14,7 +14,7 @@ export class OwnedCoupons {
   @Column({
     type: 'timestamp',
     nullable: false,
-    default: () => "DATE_FORMAT(CURRENT_TIMESTAMP,'%Y-%m-%d')",
+    default: () => 'NOW()',
     comment: '사용자가 쿠폰 발행한 날짜',
   })
   issuedDate: Date;
