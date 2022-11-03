@@ -26,4 +26,10 @@ export class OrdersController {
     return this.ordersService.searchSpecificOrders(user.userId, query.startDate, query.endDate, query.state);
   }
 
+  @UseGuards(OperateGuard)
+  @Get(':name/users')
+  getOrdersByName(@Param('name') name: string) {
+    return this.ordersService.getOrdersByName(name);
+  }
+
 }

@@ -72,7 +72,18 @@ export class OrdersService {
     });
   }
 
-export class OrdersService {}
+  async getOrdersByName(name: string) {
+    const [{ Orders: orders }] = await this.usersRepository.find({
+      where: { name },
+      join: {
+        alias: 'users',
+        innerJoinAndSelect: {
+          orders: 'users.Orders',
+        },
+      },
+    });
+    return orders;
+  }
 
   async searchSpecificOrders(userId: number, startDate: Date, endDate = new Date(), state?: OrderState, page = 1) {
     const queryBuilder = this.dataSource
