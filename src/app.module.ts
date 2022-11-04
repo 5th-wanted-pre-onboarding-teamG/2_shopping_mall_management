@@ -6,14 +6,22 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { MySqlConfigModule } from './config/database/config.module';
 import { MySqlConfigService } from './config/database/config.service';
 import { ConfigModule } from '@nestjs/config';
+import { AuthModule } from './auth/auth.module';
+import { PaymentsModule } from './payments/payments.module';
+import { ProductsModule } from './products/products.module';
+import { CountriesModule } from './countries/countries.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
     TypeOrmModule.forRootAsync({
       imports: [MySqlConfigModule],
-      useExisting: MySqlConfigService,
+      useClass: MySqlConfigService,
     }),
+    AuthModule,
+    PaymentsModule,
+    ProductsModule,
+    CountriesModule,
   ],
   controllers: [AppController],
   providers: [AppService],

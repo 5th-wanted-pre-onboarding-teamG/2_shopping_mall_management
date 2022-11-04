@@ -1,11 +1,12 @@
-import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { PaymentState } from './enums/paymentState';
 import { DateColumns } from './embeddeds/dateColumns';
 import { Orders } from './Orders';
+import { Users } from './Users';
 
 @Entity({ schema: 'product_shopping', name: 'payments' })
 export class Payments {
-  @PrimaryGeneratedColumn()
+  @PrimaryGeneratedColumn({ type: 'int', name: 'paymentId' })
   paymentId: number;
 
   @Column({ type: 'enum', name: 'paymentState', enum: PaymentState })
@@ -15,7 +16,7 @@ export class Payments {
   orderPrice: number;
 
   @Column()
-  salePrice: number;
+  discountedPrice: number;
 
   @Column()
   paymentPrice: number;
@@ -23,6 +24,20 @@ export class Payments {
   @Column(() => DateColumns, { prefix: false })
   dateColumns: DateColumns;
 
-  @ManyToOne(() => Orders, (orders) => orders.payments)
-  order: Orders;
+  @Column('int', { nullable: true, name: 'OrderId' })
+  OrderId: number;
+
+  @ManyToOne(() => Orders, (orders) => orders.Payments, {
+    onDelete: 'SET NULL',
+    onUpdate: 'CASCADE',
+  })
+  @JoinColumn([{ name: 'OrderId', referencedColumnName: 'orderId' }])
+  Order: Orders;
+
+  @ManyToOne(() => Users, (users) => users.Payments, {
+    onDelete: 'CASCADE',
+    onUpdate: 'CASCADE',
+  })
+  @JoinColumn([{ name: 'UserId', referencedColumnName: 'userId' }])
+  User: Users;
 }

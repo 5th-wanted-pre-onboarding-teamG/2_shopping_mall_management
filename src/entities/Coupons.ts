@@ -1,11 +1,11 @@
 import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 import { DateColumns } from './embeddeds/dateColumns';
 import { CouponType } from './enums/couponType';
-import { UserCoupons } from './UserCoupons';
+import { OwnedCoupons } from './OwnedCoupons';
 
 @Entity({ schema: 'product_shopping', name: 'coupons' })
 export class Coupons {
-  @PrimaryGeneratedColumn()
+  @PrimaryGeneratedColumn({ type: 'int', name: 'couponId' })
   couponId: number;
 
   @Column()
@@ -15,11 +15,14 @@ export class Coupons {
   couponType: CouponType;
 
   @Column()
-  sale: number;
+  discount: number;
+
+  @Column()
+  validPeriod: number;
 
   @Column(() => DateColumns, { prefix: false })
   dateColumns: DateColumns;
 
-  @OneToMany(() => UserCoupons, (userCoupons) => userCoupons.coupon)
-  userCoupons: UserCoupons[];
+  @OneToMany(() => OwnedCoupons, (ownedCoupons) => ownedCoupons.Coupon)
+  OwnedCoupons: OwnedCoupons[];
 }
