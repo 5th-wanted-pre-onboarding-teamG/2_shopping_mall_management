@@ -67,7 +67,7 @@ export class PaymentsService {
         .getRepository(OwnedCoupons)
         .createQueryBuilder('ownedCoupons')
         .innerJoinAndSelect(Coupons, 'coupons')
-        .select(['ownedCoupons.ownedCouponId', 'coupons.couponType', 'coupons.discountedPrice'])
+        .select(['ownedCoupons.ownedCouponId', 'coupons.couponType', 'coupons.discount'])
         .where('ownedCoupons.ownedCouponId = :ownedCouponId', { ownedCouponId })
         .getOne();
 
@@ -78,8 +78,8 @@ export class PaymentsService {
       const countryCode = existsOrder.DeliveryCost?.Country?.countryCode;
       const { couponType, discount } = ownedCoupons.Coupon;
       const totalProductPrice = productPrice * quantity;
-      let paymentSalePrice = calculateSalePrice(totalProductPrice, deliveryPrice, couponType, discount, countryCode);
-      let paymentPrice = calculatePaymentPrice(totalProductPrice, deliveryPrice, paymentSalePrice, countryCode);
+      const paymentSalePrice = calculateSalePrice(totalProductPrice, deliveryPrice, couponType, discount, countryCode);
+      const paymentPrice = calculatePaymentPrice(totalProductPrice, deliveryPrice, paymentSalePrice, countryCode);
 
       // 결제 정보 등록
       await entityManager.getRepository(Payments).insert({
