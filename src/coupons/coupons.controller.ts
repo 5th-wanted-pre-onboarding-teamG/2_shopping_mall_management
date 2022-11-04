@@ -6,6 +6,8 @@ import { CouponsService } from './coupons.service';
 import { CreateCouponDto } from './dto/create-coupon.dto';
 import { CreateOwnedCouponDto } from './dto/create-owned-coupon.dto';
 import { GetUserOwnedCouponsRes } from './dto/get-user-owned-coupons-res.dto';
+import { RestoreOwnedCouponDto } from './dto/restore-owned-coupon.dto';
+import { UseOwnedCouponDto } from './dto/use-owned-coupon.dto';
 
 @Controller('coupons')
 export class CouponsController {
@@ -112,14 +114,33 @@ export class CouponsController {
   }
 
   /**
-   * @url [PATCH] /api/coupons/owned-coupons/:ownedCouponId
+   * @url [PATCH] /api/coupons/owned-coupons
    * @description 사용자가 보유한 쿠폰 한개를 사용
    *              사용이 완료되면, usedDate = YYYY-MM-DD HH:mm:ss 형태의 타임스탬프로 변경됩니다.
-   * @param ownedCouponId
+   *              사용이 완료되면, orderId 값이 변경됩니다.
+   * @body ownedCouponId, orderId
+   * @Response: 사용완료되면 사용한 쿠폰의 discount 가격을 리턴합니다.
    */
   @UseGuards(AuthenticatedGuard)
-  @Patch('owned-coupons/:ownedCouponId')
-  async useOwnedCoupon(@User() user: Users, @Param('ownedCouponId', ParseIntPipe) ownedCouponId: number) {
-    return await this.couponsService.useOwnedCoupon(user, ownedCouponId);
+  @Patch('owned-coupons')
+  async useOwnedCoupon(@User() user: Users, @Body() useOwnedCouponDto: UseOwnedCouponDto) {
+    return await this.couponsService.useOwnedCoupon(user, useOwnedCouponDto);
+  }
+
+  /**
+   * @url [PATCH] /api/coupons/owned-coupons/restore
+   * @description 주문취소시 주문에 사용된 쿠폰 복원
+   *              만료기간 이전에 사용가능한 쿠폰이어야 합니다.
+   *              복원이 완료되면: usedDate = null, orderId= null이 됩니다.
+   * @body ownedCouponId, orderId
+   * @Response: 복원이 완료되면 사용가능 쿠폰의 리스트를 리턴합니다.
+   */
+  @UseGuards(AuthenticatedGuard)
+  @Patch('owned-coupons/restore')
+  async restoreOwnedCouponByCancelOrder(
+    @User() user: Users,
+    @Body() restoreOwnedCouponDto: RestoreOwnedCouponDto,
+  ): Promise<GetUserOwnedCouponsRes[]> {
+    return await this.couponsService.restoreOwnedCouponByCancelOrder(user, restoreOwnedCouponDto);
   }
 }
