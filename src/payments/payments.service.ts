@@ -21,8 +21,6 @@ export class PaymentsService {
   constructor(
     private dataSource: DataSource,
     private readonly paymentsRepository: PaymentsRepository,
-    // @InjectRepository(Payments)
-    // private readonly paymentsRepository: Repository<Payments>,
     @InjectRepository(Orders)
     private readonly ordersRepository: Repository<Orders>,
     @InjectRepository(Users)
@@ -55,7 +53,9 @@ export class PaymentsService {
       const productPrice = existsOrder.Product?.price;
       const deliveryPrice = existsOrder.DeliveryCost?.price;
       const countryCode = existsOrder.DeliveryCost?.Country?.countryCode;
-      const { couponType, discount } = ownedCoupons?.Coupon;
+      const couponType = ownedCoupons?.Coupon?.couponType;
+      const discount = ownedCoupons?.Coupon?.discount;
+      // const { couponType = 0, discount = 0 } = ownedCoupons?.Coupon;
       const totalProductPrice = productPrice * quantity;
       const paymentSalePrice = calculateSalePrice(totalProductPrice, deliveryPrice, couponType, discount, countryCode);
       const paymentPrice = calculatePaymentPrice(totalProductPrice, deliveryPrice, paymentSalePrice, countryCode);
