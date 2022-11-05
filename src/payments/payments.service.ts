@@ -55,7 +55,8 @@ export class PaymentsService {
 
       // 결제 정보에 저장할 금액 게산
       const { quantity, productPrice, deliveryPrice, countryCode } = existsOrder;
-      const { couponType, discount } = ownedCoupons;
+      const couponType = ownedCoupons?.couponType;
+      const discount = ownedCoupons?.discount;
       const totalProductPrice = correctionDollar(productPrice * quantity, countryCode);
       const correctionDeliveryPrice = correctionDollar(deliveryPrice, countryCode);
       const paymentSalePrice = calculateSalePrice(totalProductPrice, correctionDeliveryPrice, couponType, discount);

@@ -23,6 +23,7 @@ import { DeliveryCosts } from '../entities/DeliveryCosts';
 import { Products } from '../entities/Products';
 import { Coupons } from '../entities/Coupons';
 import { CouponType } from '../entities/enums/couponType';
+import { OrderNotFoundException } from '../exception/orders.exception';
 
 describe('PaymentsController', () => {
   let app: NestFastifyApplication;
@@ -165,6 +166,15 @@ describe('PaymentsController', () => {
     await ownedCouponInit();
   });
 
+  test('로그인 하지 않은 사용자의 결제 요청시 403 응답', async () => {
+    await request(app.getHttpServer())
+      .post('/api/payments')
+      .send({
+        orderId: order.orderId,
+      })
+      .expect(403);
+  });
+
   describe('POST /api/payments - 결제 내역 등록', () => {
     let agent;
     beforeEach(async () => {
@@ -178,16 +188,41 @@ describe('PaymentsController', () => {
         .expect(201);
     });
 
-    describe('결제 내역 실패', () => {});
+    describe('결제 내역 실패', () => {
+      test('결제할 주문이 존재하지 않을 경우 404 응답', async () => {
+        const res = await agent
+          .post('/api/payments')
+          .send({
+            orderId: order.orderId + 999,
+          })
+          .expect(404);
 
-    test('결제 내역 등록 성공', async () => {
-      await agent
-        .post('/api/payments')
-        .send({
-          orderId: order.orderId,
-          ownedCouponId: ownedCoupon.ownedCouponId,
-        })
-        .expect(201);
+        expect(res.body.message).toEqual(new OrderNotFoundException().message);
+      });
+    });
+
+    describe('결제 내역 등록 성공', () => {
+      test('할인 쿠폰이 없을 경우 등록 성공', async () => {
+        await agent
+          .post('/api/payments')
+          .send({
+            orderId: order.orderId,
+          })
+          .expect(201);
+
+        const payments = await paymentsRepository.find();
+        console.log(payments);
+      });
+
+      test('결제 내역 등록 성공', async () => {
+        await agent
+          .post('/api/payments')
+          .send({
+            orderId: order.orderId,
+            ownedCouponId: ownedCoupon.ownedCouponId,
+          })
+          .expect(201);
+      });
     });
   });
 });

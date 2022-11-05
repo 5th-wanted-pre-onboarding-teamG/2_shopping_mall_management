@@ -1,5 +1,5 @@
 import { DataSource } from 'typeorm';
-import { HttpException, HttpStatus } from '@nestjs/common';
+import { HttpException } from '@nestjs/common';
 
 /**
  * 트랜잭션 처리
@@ -38,6 +38,6 @@ export const wrapTransaction = async (
 
 export class SQLException extends HttpException {
   constructor(error: HttpException) {
-    super(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+    super(error.message, error.getStatus());
   }
 }
