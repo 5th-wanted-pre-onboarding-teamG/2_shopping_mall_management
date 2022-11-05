@@ -1,5 +1,5 @@
 import { CouponType } from '../entities/enums/couponType';
-import { NotFoundException } from '@nestjs/common';
+import { CouponTypeNotFoundException } from '../exception/coupons.exception';
 
 /**
  * 결제 금액 계산
@@ -45,7 +45,7 @@ export const calculateSalePrice = (
   } else if (isFlatRateCouponType(couponType)) {
     salePrice = discount;
   } else {
-    throw new NotFoundException('등록되지 않은 쿠폰 타입입니다.');
+    throw new CouponTypeNotFoundException();
   }
 
   return correctionDollar(salePrice, countryCode);

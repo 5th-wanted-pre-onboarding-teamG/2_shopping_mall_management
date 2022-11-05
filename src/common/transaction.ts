@@ -29,7 +29,7 @@ export const wrapTransaction = async (
     // 오류 발생시 롤백 처리
     await queryRunner.rollbackTransaction();
 
-    throw new SQLException();
+    throw new SQLException(error);
   } finally {
     // 커넥션 연결 해제
     await queryRunner.release();
@@ -37,7 +37,7 @@ export const wrapTransaction = async (
 };
 
 export class SQLException extends HttpException {
-  constructor() {
-    super('SQL 처리 중 에러 발생!', HttpStatus.INTERNAL_SERVER_ERROR);
+  constructor(error: HttpException) {
+    super(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
   }
 }
