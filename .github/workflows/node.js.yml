@@ -30,6 +30,17 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
           cache: 'npm'
+        env:
+          DB_PORT: ${{ SHOPPING_MALL_ENV.DB_PORT}}
+          DB_TYPE: ${{ SHOPPING_MALL_ENV.DB_TYPE}}
+          DB_HOST: ${{ SHOPPING_MALL_ENV.DB_HOST}}
+          DB_DATABASE: ${{ SHOPPING_MALL_ENV.DB_DATABASE}}
+          DB_USERNAME: ${{ SHOPPING_MALL_ENV.DB_USERNAME}}
+          DB_PASSWORD: ${{ SHOPPING_MALL_ENV.DB_PASSWORD}}
+          SESSION_ID: ${{ SHOPPING_MALL_ENV.SESSION_ID}}
+          COOKIE_SECRET: ${{ SHOPPING_MALL_ENV.COOKIE_SECRET}}
+          TYPEORM_SEEDING_FACTORIES: ${{ SHOPPING_MALL_ENV.TYPEORM_SEEDING_FACTORIES}}
+          TYPEORM_SEEDING_SEEDS=: ${{ SHOPPING_MALL_ENV.TYPEORM_SEEDING_SEEDS}}
       - run: npm ci
       - run: npm run build --if-present
       - run: npm test

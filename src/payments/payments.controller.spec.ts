@@ -156,7 +156,6 @@ describe('PaymentsController', () => {
           imports: [TypeOrmModule.forFeature([Payments, Orders, Users, OwnedCoupons]), MySqlConfigModule],
           useClass: MySqlConfigService,
         }),
-        TypeOrmModule.forFeature([Payments, Orders, Users, OwnedCoupons]),
         AuthModule,
         PaymentsModule,
         Repository,
