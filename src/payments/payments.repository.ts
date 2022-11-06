@@ -70,18 +70,20 @@ export class PaymentsRepository extends Repository<Payments> {
    */
   async getPaymentsByUser(user: Users): Promise<ResultUserPayments> {
     const payments = await this.createQueryBuilder('payments')
-      .innerJoinAndSelect(Orders, 'orders', 'payments.orderId = orders.orderId')
-      .innerJoinAndSelect(Products, 'products', 'orders.productId = products.productId')
+      .leftJoinAndSelect(Orders, 'orders', 'payments.OrderId = orders.orderId')
+      .leftJoinAndSelect(Products, 'products', 'orders.ProductId = products.productId')
       .select([
         'payments.createAt as paymentCreateAt',
-        'payments.salePrice',
-        'payments.paymentPrice',
-        'payments.paymentState',
+        'payments.orderPrice as orderPrice',
+        'payments.discountedPrice as discountedPrice',
+        'payments.paymentPrice as paymentPrice',
+        'payments.paymentState as paymentState',
         'products.name as productName',
-        'products.price as productPrice',
-        'orders.quantity',
+        'orders.quantity as quantity',
+        'orders.ProductId',
+        'products.productId',
       ])
-      .where({ user })
+      .where('payments.UserId = :userId', { userId: user.userId })
       .getRawMany();
 
     return { payments };
@@ -92,10 +94,10 @@ export class PaymentsRepository extends Repository<Payments> {
    * @param searchPayment 검색 정보
    */
   async getPaymentsBySearch(searchPayment: SearchPayments): Promise<ResultPaymentsDto> {
-    const { keyword = '', page = 1, pageSize = 10, startDate, endDate } = searchPayment;
+    const { keyword = '', page = 0, pageSize = 10, startDate, endDate }: SearchPayments = searchPayment;
 
     const queryBuilder = this.createQueryBuilder('payments')
-      .innerJoinAndSelect(Users, 'users', 'payments.userId = users.orderId')
+      .leftJoinAndSelect(Users, 'users', 'payments.UserId = users.userId')
       .select([
         'payments.paymentId',
         'payments.createAt as paymentCreateAt',
@@ -103,7 +105,7 @@ export class PaymentsRepository extends Repository<Payments> {
         'payments.paymentState',
         'users.name as userName',
       ])
-      .where('users.name = :username', { username: `%${keyword}%` });
+      .where('users.name LIKE :username', { username: `%${keyword}%` });
 
     if (startDate) {
       queryBuilder.andWhere("DATE_FORMAT(payments.createAt, '%Y-%m-%d') >= DATE_FORMAT(:startDate, '%Y-%m-%d')", {
@@ -118,7 +120,7 @@ export class PaymentsRepository extends Repository<Payments> {
 
     const payments = await queryBuilder
       .take(pageSize)
-      .skip(pageSize * (page - 1))
+      .skip(pageSize * page)
       .orderBy('payments.paymentId', 'DESC')
       .getRawMany();
     return { payments };

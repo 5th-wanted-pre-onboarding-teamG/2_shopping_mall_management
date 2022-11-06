@@ -3,5 +3,5 @@ export class SearchPayments {
   page: number;
   pageSize: number;
   startDate: Date;
-  endDate: string;
+  endDate: Date;
 }

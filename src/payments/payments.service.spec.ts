@@ -2,46 +2,43 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { PaymentsService } from './payments.service';
 import { Orders } from '../entities/Orders';
 import { Users } from '../entities/Users';
-import { DataSource, InsertResult, Repository, UpdateResult } from 'typeorm';
+import { DataSource, Repository } from 'typeorm';
 import { OwnedCoupons } from '../entities/OwnedCoupons';
 import { getDataSourceToken, getRepositoryToken } from '@nestjs/typeorm';
 import { CreatePaymentDto } from './dto/create-payment.dto';
 import { OrderNotFoundException } from '../exception/orders.exception';
 import { PaymentsRepository } from './payments.repository';
+import { ResultExistsOrderDto } from './dto/result-existsOrder.dto';
+import { ResultExistsOwnedCouponDto } from './dto/result-existsOwnedCoupon.dto';
 
 const mockDataSource = () => ({
   createQueryRunner: jest.fn(() => ({
     manager: {
       getRepository: jest.fn(() => ({
         createQueryBuilder: jest.fn(() => ({
-          innerJoinAndSelect: jest.fn(() => ({
-            innerJoinAndSelect: jest.fn(() => ({
-              innerJoinAndSelect: jest.fn(() => ({
-                select: jest.fn(() => ({
-                  where: jest.fn(() => ({
-                    andWhere: jest.fn(() => ({
-                      getOne: () => {},
-                    })),
-                  })),
-                })),
-              })),
-            })),
-            select: jest.fn(() => ({
+          update: jest.fn(() => ({
+            set: jest.fn(() => ({
               where: jest.fn(() => ({
-                getOne: () => {},
+                execute: jest.fn(),
               })),
             })),
           })),
         })),
-        insert: () => {},
-        update: () => {},
+        insert: jest.fn(),
       })),
     },
+
     connect: jest.fn(),
     startTransaction: jest.fn(),
     commitTransaction: jest.fn(),
     release: jest.fn(),
     rollbackTransaction: jest.fn(),
+  })),
+
+  getRepository: jest.fn(() => ({
+    target: jest.fn(),
+    manager: jest.fn(),
+    queryRunner: jest.fn(),
   })),
 });
 const mockOrdersRepository = () => ({});
@@ -107,12 +104,11 @@ describe('PaymentsService', () => {
     test('결제 성공', async () => {
       const createPayment = new CreatePaymentDto();
       const user = new Users();
-      const repository = dataSource.createQueryRunner().manager.getRepository();
 
-      jest.spyOn(paymentsRepository, 'getOrderById').mockResolvedValue(Promise.resolve(new Orders()));
-      jest.spyOn(paymentsRepository, 'getOwnedCouponById').mockResolvedValue(Promise.resolve(new OwnedCoupons()));
-      jest.spyOn(repository, 'insert').mockResolvedValue(Promise.resolve(new InsertResult()));
-      jest.spyOn(repository, 'update').mockResolvedValue(Promise.resolve(new UpdateResult()));
+      jest.spyOn(paymentsRepository, 'getOrderById').mockResolvedValue(new ResultExistsOrderDto());
+      jest
+        .spyOn(paymentsRepository, 'getOwnedCouponById')
+        .mockResolvedValue(Promise.resolve(new ResultExistsOwnedCouponDto()));
 
       return expect(paymentsService.createPayment(createPayment, user));
     });
