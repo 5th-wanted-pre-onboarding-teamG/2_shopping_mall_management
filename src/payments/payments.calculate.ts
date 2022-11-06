@@ -1,22 +1,14 @@
 import { CouponType } from '../entities/enums/couponType';
-import { NotFoundException } from '@nestjs/common';
+import { CouponTypeNotFoundException } from '../exception/coupons.exception';
 
 /**
  * 결제 금액 계산
  * @param totalProductPrice 상품 총 금액
  * @param deliveryPrice 배송비
  * @param salePrice 할인 금액
- * @param countryCode 국가 코드
  */
-export const calculatePaymentPrice = (
-  totalProductPrice: number,
-  deliveryPrice: number,
-  salePrice: number,
-  countryCode: string,
-) => {
-  let orderPrice = totalProductPrice + deliveryPrice;
-  orderPrice = correctionDollar(orderPrice, countryCode);
-  return orderPrice - salePrice;
+export const calculatePaymentPrice = (totalProductPrice: number, deliveryPrice: number, salePrice: number) => {
+  return totalProductPrice + deliveryPrice - salePrice;
 };
 
 /**
@@ -25,14 +17,12 @@ export const calculatePaymentPrice = (
  * @param deliveryPrice 배송비
  * @param couponType 쿠폰 타입
  * @param discount 쿠폰 할인 금액/퍼센트
- * @param countryCode 국가 코드
  */
 export const calculateSalePrice = (
   totalProductPrice: number,
   deliveryPrice: number,
   couponType: CouponType,
   discount: number,
-  countryCode: string,
 ) => {
   if (!couponType) return 0;
 
@@ -45,10 +35,10 @@ export const calculateSalePrice = (
   } else if (isFlatRateCouponType(couponType)) {
     salePrice = discount;
   } else {
-    throw new NotFoundException('등록되지 않은 쿠폰 타입입니다.');
+    throw new CouponTypeNotFoundException();
   }
 
-  return correctionDollar(salePrice, countryCode);
+  return salePrice;
 };
 
 /**
@@ -57,7 +47,7 @@ export const calculateSalePrice = (
  * @param salePercent 배송 할인 퍼센트
  */
 const calculateDeliverySalePrice = (deliveryPrice: number, salePercent: number) => {
-  return Math.round((deliveryPrice * salePercent) / 100);
+  return Number(((deliveryPrice * salePercent) / 100).toFixed(2));
 };
 
 /**
@@ -66,7 +56,7 @@ const calculateDeliverySalePrice = (deliveryPrice: number, salePercent: number) 
  * @param salePercent 상품 할인 퍼센트
  */
 const calculatePercentSalePrice = (totalProductPrice: number, salePercent: number) => {
-  return Math.round((totalProductPrice * salePercent) / 100);
+  return Number(((totalProductPrice * salePercent) / 100).toFixed(2));
 };
 
 /**
@@ -93,13 +83,13 @@ const isFlatRateCouponType = (couponType: CouponType) => {
   return couponType === CouponType.FLAT_RATE;
 };
 
-const correctionDollar = (price: number, countryCode: string) => {
+export const correctionDollar = (price: number, countryCode: string) => {
   if (isKoreaCode(countryCode)) {
     return price;
   }
 
   const oneDollarPerWon = 1200;
-  return Math.round(price / oneDollarPerWon);
+  return Number((price / oneDollarPerWon).toFixed(2));
 };
 
 const isKoreaCode = (countryCode: string) => {

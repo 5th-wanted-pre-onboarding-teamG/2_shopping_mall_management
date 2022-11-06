@@ -1,29 +1,28 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { DataSource, EntityManager, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Users } from '../entities/Users';
 import { Payments } from '../entities/Payments';
 import { Orders } from '../entities/Orders';
 import { CreatePaymentDto } from './dto/create-payment.dto';
-import { Products } from '../entities/Products';
 import { ResultUserPayments } from './dto/result-user-payments.dto';
 import { SearchPayments } from './dto/search-payments';
-import { DeliveryCosts } from '../entities/DeliveryCosts';
-import { Coupons } from '../entities/Coupons';
 import { PaymentState } from '../entities/enums/paymentState';
 import { OrderState } from '../entities/enums/orderState';
-import { calculatePaymentPrice, calculateSalePrice } from './payments.calculate';
+import { calculatePaymentPrice, calculateSalePrice, correctionDollar } from './payments.calculate';
 import { ResultPaymentsDto } from './dto/result-payments.dto';
 import { wrapTransaction } from '../common/transaction';
-import { Countries } from '../entities/Countries';
 import { OwnedCoupons } from '../entities/OwnedCoupons';
+import { OrderNotFoundException } from '../exception/orders.exception';
+import { PaymentsRepository } from './payments.repository';
+import { ResultExistsOrderDto } from './dto/result-existsOrder.dto';
+import { ResultExistsOwnedCouponDto } from './dto/result-existsOwnedCoupon.dto';
 
 @Injectable()
 export class PaymentsService {
   constructor(
     private dataSource: DataSource,
-    @InjectRepository(Payments)
-    private readonly paymentsRepository: Repository<Payments>,
+    private readonly paymentsRepository: PaymentsRepository,
     @InjectRepository(Orders)
     private readonly ordersRepository: Repository<Orders>,
     @InjectRepository(Users)
@@ -41,49 +40,32 @@ export class PaymentsService {
     await wrapTransaction(this.dataSource, async (entityManager: EntityManager) => {
       const orderId = createPaymentDto.orderId;
       // 결제할 주문 확인
-      const existsOrder = await entityManager
-        .getRepository(Orders)
-        .createQueryBuilder('orders')
-        .innerJoinAndSelect(Products, 'products')
-        .innerJoinAndSelect(DeliveryCosts, 'deliveryCosts')
-        .innerJoinAndSelect(Countries, 'countries', 'deliveryCosts.countryId = countries.countryId')
-        .select([
-          'orders.quantity',
-          'products.price as productPrice',
-          'deliveryCosts.price as deliveryPrice',
-          'countries.countryCode',
-        ])
-        .where('orders.orderId = :orderId', { orderId })
-        .andWhere('orders.orderState = :orderState', { orderState: OrderState.PAYMENT_WAITING })
-        .getOne();
+      const existsOrder: ResultExistsOrderDto = await this.paymentsRepository.getOrderById(entityManager, orderId);
 
       if (!existsOrder) {
-        throw new NotFoundException('주문 정보를 찾을 수 없습니다.');
+        throw new OrderNotFoundException();
       }
 
       // 사용할 쿠폰 확인
       const ownedCouponId = createPaymentDto.ownedCouponId;
-      const ownedCoupons = await entityManager
-        .getRepository(OwnedCoupons)
-        .createQueryBuilder('ownedCoupons')
-        .innerJoinAndSelect(Coupons, 'coupons')
-        .select(['ownedCoupons.ownedCouponId', 'coupons.couponType', 'coupons.discount'])
-        .where('ownedCoupons.ownedCouponId = :ownedCouponId', { ownedCouponId })
-        .getOne();
+      const ownedCoupons: ResultExistsOwnedCouponDto = await this.paymentsRepository.getOwnedCouponById(
+        entityManager,
+        ownedCouponId,
+      );
 
       // 결제 정보에 저장할 금액 게산
-      const quantity = existsOrder.quantity;
-      const productPrice = existsOrder.Product?.price;
-      const deliveryPrice = existsOrder.DeliveryCost?.price;
-      const countryCode = existsOrder.DeliveryCost?.Country?.countryCode;
-      const { couponType, discount } = ownedCoupons.Coupon;
-      const totalProductPrice = productPrice * quantity;
-      const paymentSalePrice = calculateSalePrice(totalProductPrice, deliveryPrice, couponType, discount, countryCode);
-      const paymentPrice = calculatePaymentPrice(totalProductPrice, deliveryPrice, paymentSalePrice, countryCode);
+      const { quantity, productPrice, deliveryPrice, countryCode } = existsOrder;
+      const couponType = ownedCoupons?.couponType;
+      const discount = ownedCoupons?.discount;
+      const totalProductPrice = correctionDollar(productPrice * quantity, countryCode);
+      const correctionDeliveryPrice = correctionDollar(deliveryPrice, countryCode);
+      const paymentSalePrice = calculateSalePrice(totalProductPrice, correctionDeliveryPrice, couponType, discount);
+      const paymentPrice = calculatePaymentPrice(totalProductPrice, correctionDeliveryPrice, paymentSalePrice);
 
       // 결제 정보 등록
       await entityManager.getRepository(Payments).insert({
         paymentState: PaymentState.COMPLETE,
+        orderPrice: totalProductPrice + correctionDeliveryPrice,
         discountedPrice: paymentSalePrice,
         paymentPrice,
         Order: existsOrder,
@@ -91,14 +73,22 @@ export class PaymentsService {
       });
 
       // 주문의 상태를 결제 완료로 변경
-      await entityManager.getRepository(Orders).update(orderId, {
-        orderState: OrderState.PAYMENT_COMPLETE,
-      });
+      await entityManager
+        .getRepository(Orders)
+        .createQueryBuilder()
+        .update(Orders)
+        .set({ orderState: OrderState.PAYMENT_COMPLETE })
+        .where('orderId = :orderId', { orderId })
+        .execute();
 
       // 쿠폰을 사용 상태로 변경
-      await entityManager.getRepository(OwnedCoupons).update(ownedCoupons.ownedCouponId, {
-        Order: existsOrder,
-      });
+      await entityManager
+        .getRepository(OwnedCoupons)
+        .createQueryBuilder()
+        .update(OwnedCoupons)
+        .set({ OrderId: orderId, usedDate: new Date() })
+        .where('ownedCouponId = :ownedCouponId', { ownedCouponId })
+        .execute();
     });
   }
 
@@ -107,23 +97,7 @@ export class PaymentsService {
    * @param user 유저 정보
    */
   async getPaymentsByUser(user: Users): Promise<ResultUserPayments> {
-    const payments = await this.paymentsRepository
-      .createQueryBuilder('payments')
-      .innerJoinAndSelect(Orders, 'orders', 'payments.orderId = orders.orderId')
-      .innerJoinAndSelect(Products, 'products', 'orders.productId = products.productId')
-      .select([
-        'payments.createAt as paymentCreateAt',
-        'payments.salePrice',
-        'payments.paymentPrice',
-        'payments.paymentState',
-        'products.name as productName',
-        'products.price as productPrice',
-        'orders.quantity',
-      ])
-      .where({ user })
-      .getRawMany();
-
-    return { payments };
+    return this.paymentsRepository.getPaymentsByUser(user);
   }
 
   /**
@@ -131,36 +105,6 @@ export class PaymentsService {
    * @param searchPayment 검색어, 페이지 등 검색 조건
    */
   async getPaymentsBySearch(searchPayment: SearchPayments): Promise<ResultPaymentsDto> {
-    const { keyword = '', page = 1, pageSize = 10, startDate, endDate } = searchPayment;
-
-    const queryBuilder = this.paymentsRepository
-      .createQueryBuilder('payments')
-      .innerJoinAndSelect(Users, 'users', 'payments.userId = users.orderId')
-      .select([
-        'payments.paymentId',
-        'payments.createAt as paymentCreateAt',
-        'payments.paymentPrice',
-        'payments.paymentState',
-        'users.name as userName',
-      ])
-      .where('users.name = :username', { username: `%${keyword}%` });
-
-    if (startDate) {
-      queryBuilder.andWhere("DATE_FORMAT(payments.createAt, '%Y-%m-%d') >= DATE_FORMAT(:startDate, '%Y-%m-%d')", {
-        startDate,
-      });
-    }
-    if (endDate) {
-      queryBuilder.andWhere("DATE_FORMAT(payments.createAt, '%Y-%m-%d') <= DATE_FORMAT(:endDate, '%Y-%m-%d')", {
-        endDate,
-      });
-    }
-
-    const payments = await queryBuilder
-      .take(pageSize)
-      .skip(pageSize * (page - 1))
-      .orderBy('payments.paymentId', 'DESC')
-      .getRawMany();
-    return { payments };
+    return this.paymentsRepository.getPaymentsBySearch(searchPayment);
   }
 }

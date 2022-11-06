@@ -21,7 +21,7 @@ export class PaymentsController {
   @Post()
   async createPayment(@User() user: Users, @Body() createPaymentDto: CreatePaymentDto, @Res() res) {
     await this.usersService.createPayment(createPaymentDto, user);
-    res.status(HttpStatus.CREATED);
+    res.status(HttpStatus.CREATED).send();
   }
 
   /**
