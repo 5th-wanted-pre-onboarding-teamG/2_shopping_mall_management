@@ -3,8 +3,6 @@ import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { NestFastifyApplication } from '@nestjs/platform-fastify';
 import { PaymentsRepository } from './payments.repository';
-import { MySqlConfigModule } from '../config/database/config.module';
-import { MySqlConfigService } from '../config/database/config.service';
 import { AuthModule } from '../auth/auth.module';
 import { PaymentsModule } from './payments.module';
 import { ValidationPipe } from '@nestjs/common';
@@ -152,9 +150,19 @@ describe('PaymentsController', () => {
     const module: TestingModule = await Test.createTestingModule({
       imports: [
         ConfigModule.forRoot({ isGlobal: true }),
-        TypeOrmModule.forRootAsync({
-          imports: [TypeOrmModule.forFeature([Payments, Orders, Users, OwnedCoupons]), MySqlConfigModule],
-          useClass: MySqlConfigService,
+        TypeOrmModule.forFeature([Payments, Orders, Users, OwnedCoupons]),
+        TypeOrmModule.forRoot({
+          type: 'mysql',
+          host: process.env.DB_HOST,
+          port: parseInt(process.env.DB_TEST_PORT),
+          username: process.env.DB_USERNAME,
+          password: process.env.DB_PASSWORD,
+          database: process.env.DB_DATABASE,
+          migrations: [__dirname + '/src/migrations/*.ts'],
+          entities: [Users, Products, Payments, Orders, Users, Coupons, OwnedCoupons, Countries, DeliveryCosts],
+          synchronize: true,
+          logging: true,
+          keepConnectionAlive: true,
         }),
         AuthModule,
         PaymentsModule,
