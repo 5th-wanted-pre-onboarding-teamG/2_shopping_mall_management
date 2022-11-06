@@ -11,25 +11,43 @@ export class OwnedCoupons {
   /**
    * 쿠폰 발행 날짜
    */
-  @Column({ type: 'timestamp', nullable: false, default: () => "DATE_FORMAT(CURRENT_TIMESTAMP,'%Y-%m-%d')" })
+  @Column({
+    type: 'timestamp',
+    nullable: false,
+    default: () => 'NOW()',
+    comment: '사용자가 쿠폰 발행한 날짜',
+  })
   issuedDate: Date;
 
   /**
    * 쿠폰 사용 날짜
+   * 기본값: null
+   * 사용시: null -> 쿠폰사용 요청 시각
    */
-  @Column({ type: 'timestamp', default: () => "DATE_FORMAT(CURRENT_TIMESTAMP,'%Y-%m-%d')" })
+  @Column({
+    type: 'timestamp',
+    nullable: true,
+    default: () => null,
+    comment: '쿠폰 사용날짜 (기본: null / 쿠폰사용시: 사용날짜)',
+  })
   usedDate: Date;
 
   /**
    * 쿠폰 만료 날짜
    */
-  @Column({ nullable: false })
+  @Column({
+    type: 'timestamp',
+    nullable: true,
+    default: () => null,
+    comment:
+      '쿠폰 만료날짜 (기본, 쿠폰생성시: null / 쿠폰발행시: 쿠폰발행날짜 + 유효기간 / 쿠폰연장시: 쿠폰연장날짜 + 14일)',
+  })
   expirationDate: Date;
 
   /**
    * 만료기간 연장
    */
-  @Column({ default: false, nullable: false })
+  @Column({ default: false, nullable: false, comment: '쿠폰 만료기간 연장여부 (기본: false / 연장: true)' })
   isExtendDate: boolean;
 
   @Column('int', { primary: true, name: 'UserId' })
