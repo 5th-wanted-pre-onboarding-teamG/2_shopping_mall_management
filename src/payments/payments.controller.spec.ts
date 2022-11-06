@@ -148,8 +148,6 @@ describe('PaymentsController', () => {
     ownedCoupon = await ownedCouponInit(user, coupon);
   };
 
-  // 쿠폰, 보유쿠폰 생성 후 테스트 진행!
-
   beforeAll(async () => {
     const module: TestingModule = await Test.createTestingModule({
       imports: [
@@ -258,7 +256,7 @@ describe('PaymentsController', () => {
     });
   });
 
-  describe('유저의 개인 결제 내역 조회', () => {
+  describe('GET /api/payments/users - 유저의 개인 결제 내역 조회', () => {
     let payment;
     beforeAll(async () => {
       await testInit();
@@ -302,7 +300,7 @@ describe('PaymentsController', () => {
     });
   });
 
-  describe('결제 내역 검색 조회', () => {
+  describe('GET /api/payments - 결제 내역 검색 조회', () => {
     let payment;
     beforeAll(async () => {
       await testInit();
