@@ -17,6 +17,7 @@ export class Coupons {
   @Column({ type: 'enum', name: 'couponType', enum: CouponType, comment: '쿠폰타입' })
   couponType: CouponType;
 
+  @Column()
   /**
    * 쿠폰할인 가격
    * 퍼센트할인(%): 최소값 1% ~ 최댓값 100%

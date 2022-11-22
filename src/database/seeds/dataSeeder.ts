@@ -31,7 +31,7 @@ export default class DataSeeder implements Seeder {
 
       const data = Object.keys(items).map((key) => {
         return {
-          country: country,
+          CountryId: country.countryId,
           quantity: parseInt(key),
           price: parseInt(items[key]),
         };
