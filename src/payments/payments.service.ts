@@ -67,7 +67,7 @@ export class PaymentsService {
         .getRepository(OwnedCoupons)
         .createQueryBuilder('ownedCoupons')
         .innerJoinAndSelect(Coupons, 'coupons')
-        .select(['ownedCoupons.ownedCouponId', 'coupons.couponType', 'coupons.salePrice'])
+        .select(['ownedCoupons.ownedCouponId', 'coupons.couponType', 'coupons.discount'])
         .where('ownedCoupons.ownedCouponId = :ownedCouponId', { ownedCouponId })
         .getOne();
 

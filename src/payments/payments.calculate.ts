@@ -9,9 +9,9 @@ import { NotFoundException } from '@nestjs/common';
  * @param countryCode 국가 코드
  */
 export const calculatePaymentPrice = (
-  totalProductPrice: number = 0,
-  deliveryPrice: number = 0,
-  salePrice: number = 0,
+  totalProductPrice: number,
+  deliveryPrice: number,
+  salePrice: number,
   countryCode: string,
 ) => {
   let orderPrice = totalProductPrice + deliveryPrice;
@@ -24,14 +24,14 @@ export const calculatePaymentPrice = (
  * @param totalProductPrice 상품 총 금액
  * @param deliveryPrice 배송비
  * @param couponType 쿠폰 타입
- * @param discountedPrice 쿠폰 할인 금액/퍼센트
+ * @param discount 쿠폰 할인 금액/퍼센트
  * @param countryCode 국가 코드
  */
 export const calculateSalePrice = (
-  totalProductPrice: number = 0,
-  deliveryPrice: number = 0,
+  totalProductPrice: number,
+  deliveryPrice: number,
   couponType: CouponType,
-  discountedPrice: number = 0,
+  discount: number,
   countryCode: string,
 ) => {
   if (!couponType) return 0;
@@ -39,11 +39,11 @@ export const calculateSalePrice = (
   let salePrice = 0;
 
   if (isDeliveryCouponType(couponType)) {
-    salePrice = calculateDeliverySalePrice(deliveryPrice, discountedPrice);
+    salePrice = calculateDeliverySalePrice(deliveryPrice, discount);
   } else if (isPercentCouponType(couponType)) {
-    salePrice = calculatePercentSalePrice(totalProductPrice, discountedPrice);
+    salePrice = calculatePercentSalePrice(totalProductPrice, discount);
   } else if (isFlatRateCouponType(couponType)) {
-    salePrice = discountedPrice;
+    salePrice = discount;
   } else {
     throw new NotFoundException('등록되지 않은 쿠폰 타입입니다.');
   }
@@ -56,7 +56,7 @@ export const calculateSalePrice = (
  * @param deliveryPrice 배송비
  * @param salePercent 배송 할인 퍼센트
  */
-const calculateDeliverySalePrice = (deliveryPrice: number = 0, salePercent: number = 0) => {
+const calculateDeliverySalePrice = (deliveryPrice: number, salePercent: number) => {
   return Math.round((deliveryPrice * salePercent) / 100);
 };
 
@@ -65,7 +65,7 @@ const calculateDeliverySalePrice = (deliveryPrice: number = 0, salePercent: numb
  * @param totalProductPrice 상품 총 금액
  * @param salePercent 상품 할인 퍼센트
  */
-const calculatePercentSalePrice = (totalProductPrice: number = 0, salePercent: number = 0) => {
+const calculatePercentSalePrice = (totalProductPrice: number, salePercent: number) => {
   return Math.round((totalProductPrice * salePercent) / 100);
 };
 
